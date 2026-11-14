@@ -1,5 +1,5 @@
-# Lints the workflows and shell scripts in this repo and tests the add-to-board
-# action. Runs on every pull request and on pushes to main.
+# Lints the workflows and shell scripts in this repo and tests the actions.
+# Runs on every pull request and on pushes to main.
 name: Lint and test
 
 on:
@@ -24,7 +24,8 @@ jobs:
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
           ./actionlint -color -ignore 'SC2016:'
       - name: shellcheck
-        run: shellcheck actions/*/*.sh tests/*/*.sh
+        # -x follows the `source` lines into lib/ and tests/lib/.
+        run: shellcheck -x lib/*.sh actions/*/*.sh tests/*/*.sh
 
   test-set-fields:
     runs-on: ubuntu-latest
@@ -53,3 +54,49 @@ jobs:
             exit 1
           fi
           echo "Skipped as expected"
+
+  test-board-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run the board-sweep scripts against a fake gh
+        run: bash tests/board-sweep/test-board-sweep.sh
+
+  test-sprint-rollover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run rollover.sh against a fake gh
+        run: bash tests/sprint-rollover/test-sprint-rollover.sh
+
+  # Unlike add-to-board, the scheduled actions fail without a token, so a
+  # missing secret gets noticed. The error annotations this job shows are expected.
+  test-scheduled-need-token:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run board-sweep with no token
+        id: sweep
+        continue-on-error: true
+        uses: ./actions/board-sweep
+        with:
+          board-token: ''
+      - name: Run sprint-rollover with no token
+        id: rollover
+        continue-on-error: true
+        uses: ./actions/sprint-rollover
+        with:
+          board-token: ''
+      - name: Check that both failed
+        env:
+          SWEEP: ${{ steps.sweep.outcome }}
+          ROLLOVER: ${{ steps.rollover.outcome }}
+        run: |
+          if [[ "$SWEEP" != failure || "$ROLLOVER" != failure ]]; then
+            echo "::error::Expected both to fail without a token, got board-sweep: $SWEEP, sprint-rollover: $ROLLOVER"
+            exit 1
+          fi
+          echo "Both failed as expected"
