@@ -1,4 +1,4 @@
-# sn-github-automation
+# SN-Github-Automation
 
 Shared GitHub Actions workflows and actions that other repositories import, so the logic lives in one place instead of being copied into every repo. The first piece is project-board automation: putting new issues on a GitHub Projects board and filling in default field values.
 
@@ -28,7 +28,7 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
        runs-on: ubuntu-latest
        timeout-minutes: 2
        steps:
-         - uses: SNprime24/sn-github-automation/actions/add-to-board@v1
+         - uses: SNprime24/SN-Github-Automation/actions/add-to-board@v1
            with:
              board-token: ${{ secrets.BOARD_TOKEN }}
    ```
