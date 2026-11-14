@@ -24,12 +24,12 @@ See the [main README](../../README.md#using-the-add-to-board-action) for the cal
 
 | Output | What it is |
 |---|---|
-| `item-id` | ID of the card on the board. Empty when the action skipped because there was no token. |
+| `item-id` | ID of the card on the board. Empty when the action skipped, either because there was no token or because the issue was transferred out of the repo. |
 
 ## Requirements
 
 - **Runner:** Linux or macOS with `bash`, `gh` and `jq`. GitHub's `ubuntu-latest` runners have all three.
-- **Trigger:** an `issues` event (`opened`, `reopened` or `transferred`). `actions/add-to-project` reads the issue from the event.
+- **Trigger:** an `issues` event, `opened` or `reopened`. `actions/add-to-project` reads the issue from the event. An issue transferred into the repo arrives as `opened`. A `transferred` event only reaches the repo the issue left, so the action skips it with a notice.
 - **Board fields:** the Sprint field must be an iteration field named `Sprint`. Missing fields are skipped with a warning.
 
 ## Files
