@@ -10,6 +10,10 @@
 #   PROJECT_NUMBER  project number, from its URL
 #   DEFAULTS        space-separated Field=Option pairs; only empty fields are filled
 #   SPRINT_TZ       timezone for "today" when picking the next sprint
+
+# The $names inside the single-quoted queries are GraphQL variables, not shell ones.
+# shellcheck disable=SC2016
+
 set -euo pipefail
 
 project=$(gh api graphql -f query='
