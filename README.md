@@ -7,7 +7,7 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 | Name | Kind | What it does |
 |---|---|---|
 | [`actions/add-to-board`](actions/add-to-board) | Composite action | Adds the issue that triggered the workflow to a project board, then fills empty **Priority**, **Size** and **Status** fields with defaults and an empty **Sprint** with the next sprint. |
-| [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow (old copy) | The same logic as a standalone workflow, from before the action existed. Repos that still have a copy keep working, and they move to the action one at a time. |
+| [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow (old copy) | The same logic as a standalone workflow, from before the action existed. Repos that still have a copy keep working, and they move to the action one at a time. It still lists the `transferred` trigger, so transferring an issue **out** of one of those repos shows a failed run there ([#8](https://github.com/SNprime24/SN-Github-Automation/issues/8)). The issue itself still reaches the board from its new repo. |
 | [`lint.yml`](.github/workflows/lint.yml) | This repo's CI | Lints the workflows and shell scripts here and tests the add-to-board action, on every pull request and push to `main`. |
 
 ## Using the add-to-board action
@@ -19,7 +19,7 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 
    on:
      issues:
-       types: [opened, reopened, transferred]
+       types: [opened, reopened]
 
    permissions: {}
 
@@ -37,6 +37,8 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 3. Open a test issue. Within a few seconds it should be on the board with the default values set.
 
 If `BOARD_TOKEN` isn't set, each run ends with a notice instead of failing, so the workflow can be added before the secret.
+
+**Transferred issues** need no trigger of their own. An issue moved into the repo arrives as `opened`, which adds it. Don't add `transferred` to the list. That event only reaches the repo the issue **left**, after the issue has gone, so nothing can be added from there. If a caller still lists it, the action skips it with a notice instead of failing.
 
 The other inputs (which board, which defaults, which timezone) all have defaults, so most callers pass only the token. They're listed in the [action's README](actions/add-to-board/README.md#inputs).
 

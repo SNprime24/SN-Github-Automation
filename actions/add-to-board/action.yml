@@ -35,27 +35,37 @@ inputs:
 
 outputs:
   item-id:
-    description: ID of the project item for the issue. Empty when the action skipped.
+    description: >-
+      ID of the project item for the issue. Empty when the action skipped (no token,
+      or the issue was transferred out of this repo).
     value: ${{ steps.add.outputs.itemId }}
 
 runs:
   using: composite
   steps:
+    # A transferred issue arrives in its new repo as an `opened` event, which adds it
+    # there. The `transferred` event only reaches the repo the issue left, and its
+    # issue ID no longer exists, so adding it would fail.
+    - name: Skip (issue transferred out of this repo)
+      if: github.event.action == 'transferred'
+      shell: bash
+      run: echo "::notice::This issue was transferred to another repository, so it isn't added from here. Its new repository adds it when it gets the issue as opened."
+
     - name: Skip (no board token)
-      if: inputs.board-token == ''
+      if: github.event.action != 'transferred' && inputs.board-token == ''
       shell: bash
       run: echo "::notice::No board token was given (is the BOARD_TOKEN secret set in this repo?), so the issue was not added to the board."
 
     - name: Add issue to board
       id: add
-      if: inputs.board-token != ''
+      if: github.event.action != 'transferred' && inputs.board-token != ''
       uses: actions/add-to-project@v1.0.2
       with:
         project-url: https://github.com/users/${{ inputs.owner }}/projects/${{ inputs.project-number }}
         github-token: ${{ inputs.board-token }}
 
     - name: Set default Priority, Size, Status and Sprint
-      if: inputs.board-token != ''
+      if: github.event.action != 'transferred' && inputs.board-token != ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.board-token }}
