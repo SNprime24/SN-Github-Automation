@@ -4,57 +4,45 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 
 ## What's here
 
-| Name | Kind | Status | What it does |
-|---|---|---|---|
-| [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow | Available, used as a copy | Adds new, reopened and transferred issues to a project board, then fills empty **Priority**, **Size** and **Status** fields with defaults and an empty **Sprint** with the next sprint. |
-| `actions/add-to-board` | Composite action | Planned | The same logic as an action that callers import with `uses:`, so the workflow above stops being copied. |
+| Name | Kind | What it does |
+|---|---|---|
+| [`actions/add-to-board`](actions/add-to-board) | Composite action | Adds the issue that triggered the workflow to a project board, then fills empty **Priority**, **Size** and **Status** fields with defaults and an empty **Sprint** with the next sprint. |
+| [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow (old copy) | The same logic as a standalone workflow, from before the action existed. Repos that still have a copy keep working, and they move to the action one at a time. |
+| [`lint.yml`](.github/workflows/lint.yml) | This repo's CI | Lints the workflows and shell scripts here and tests the add-to-board action, on every pull request and push to `main`. |
 
-## Using `add-to-board.yml` today
+## Using the add-to-board action
 
-Until the action exists, a repo uses this workflow by keeping its own copy.
+1. Add a short workflow to the repo, for example `.github/workflows/add-to-board.yml`. Triggers can't be imported, so each repo keeps this file:
 
-1. Copy [`.github/workflows/add-to-board.yml`](.github/workflows/add-to-board.yml) into the repo, unchanged, at the same path.
+   ```yaml
+   name: Add to board
+
+   on:
+     issues:
+       types: [opened, reopened, transferred]
+
+   permissions: {}
+
+   jobs:
+     add:
+       runs-on: ubuntu-latest
+       timeout-minutes: 2
+       steps:
+         - uses: SNprime24/sn-github-automation/actions/add-to-board@v1
+           with:
+             board-token: ${{ secrets.BOARD_TOKEN }}
+   ```
+
 2. Add a repository secret named `BOARD_TOKEN` (**Settings → Secrets and variables → Actions**). It must be a **classic** personal access token with the `repo` and `project` scopes.
 3. Open a test issue. Within a few seconds it should be on the board with the default values set.
 
 If `BOARD_TOKEN` isn't set, each run ends with a notice instead of failing, so the workflow can be added before the secret.
 
-### What it fills in
-
-Only **empty** fields are changed. Anything already set on the card is left alone.
-
-| Setting in the workflow | What it means |
-|---|---|
-| `project-url`, `OWNER`, `PROJECT_NUMBER` | The project board the issues go to. |
-| `DEFAULTS` | `Field=Option` pairs for single-select fields, separated by spaces. Default: `Priority=Normal Size=M Status=Backlog`. |
-| `SPRINT_TZ` | The timezone used to decide what "today" is. The next sprint is the first iteration of the **Sprint** field that starts after today. |
-
-If a field or option named in `DEFAULTS` isn't on the board, or no sprint starts after today, the run logs a warning and carries on.
-
-## Coming next: the `add-to-board` action
-
-The same logic is moving into a composite action under `actions/add-to-board/`. Each repo will then keep only a short trigger workflow, because triggers (`on: issues`) can't be imported. That file will call the action as a step, roughly like this:
-
-```yaml
-name: Add to board
-on:
-  issues:
-    types: [opened, reopened, transferred]
-permissions: {}
-jobs:
-  add:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: SNprime24/sn-github-automation/actions/add-to-board@v1
-        with:
-          board-token: ${{ secrets.BOARD_TOKEN }}
-```
-
-The inputs will have the current settings as their defaults. This section will list them once the action is released.
+The other inputs (which board, which defaults, which timezone) all have defaults, so most callers pass only the token. They're listed in the [action's README](actions/add-to-board/README.md#inputs).
 
 ## Versioning
 
-Once actions are released, callers should pin to a major version, such as `@v1`, rather than `@main`.
+Callers pin to a major version, such as `@v1`, rather than `@main`.
 
 - **Fixes and new options that don't change behaviour** go out as `v1.x.y`. The `v1` tag moves forward to the latest `v1.x.y`, so callers on `@v1` get them automatically.
 - **Breaking changes** (renamed or removed inputs, different defaults, different behaviour) go out as `v2`. Callers on `@v1` keep working until they choose to move.
@@ -65,7 +53,8 @@ Pinning to `@main` isn't recommended, because a broken commit there would break 
 
 ```text
 .github/workflows/   Reusable workflows (on: workflow_call) and this repo's own workflows
-actions/<name>/      One composite action per folder, with its action.yml and a short README
+actions/<name>/      One composite action per folder: action.yml, its scripts and a short README
+tests/<name>/        Tests for the action of the same name
 ```
 
 New additions go where they fit:
@@ -73,7 +62,21 @@ New additions go where they fit:
 - **A step other workflows can use** → a new folder under `actions/`, named after what it does (for example `actions/add-to-board/`).
 - **A whole job other repos call** → a reusable workflow in `.github/workflows/`.
 
-Each new action or workflow also gets a row in [What's here](#whats-here).
+Each new action or workflow also gets a row in [What's here](#whats-here), and its tests a job in `lint.yml`.
+
+## Development
+
+Every pull request runs [`lint.yml`](.github/workflows/lint.yml):
+
+- **actionlint** on the workflows, which also runs shellcheck on their `run:` blocks
+- **shellcheck** on the scripts in `actions/` and `tests/`
+- **The add-to-board tests:** `set-fields.sh` against a fake `gh` (defaults filled, set fields left alone, unknown fields and options, no future sprint), and the action itself run with no token, to check that it skips
+
+The script tests can also be run locally with bash and jq:
+
+```bash
+bash tests/add-to-board/test-set-fields.sh
+```
 
 ## Requirements
 

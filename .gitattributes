@@ -1,0 +1,4 @@
+* text=auto
+# Scripts and workflows run on Linux runners; keep LF even in Windows checkouts.
+*.sh text eol=lf
+*.yml text eol=lf

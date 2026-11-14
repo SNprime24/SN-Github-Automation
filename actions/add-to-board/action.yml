@@ -1,0 +1,67 @@
+name: Add to board
+description: >-
+  Add the issue that triggered the workflow to a GitHub Projects board, then fill
+  empty Priority, Size and Status fields with defaults and an empty Sprint with
+  the next sprint.
+
+inputs:
+  board-token:
+    description: >-
+      Classic personal access token with the `repo` and `project` scopes, usually
+      `secrets.BOARD_TOKEN`. If it's empty, the action skips with a notice instead
+      of failing.
+    required: false
+    default: ''
+  owner:
+    description: Login of the user that owns the project board.
+    required: false
+    default: SNprime24
+  project-number:
+    description: Number of the project board, from its URL (`/users/<owner>/projects/<number>`).
+    required: false
+    default: '13'
+  defaults:
+    description: >-
+      Space-separated `Field=Option` pairs for single-select fields. Only empty
+      fields are filled.
+    required: false
+    default: Priority=Normal Size=M Status=Backlog
+  sprint-tz:
+    description: >-
+      Timezone used to decide what "today" is. The next sprint is the first
+      iteration of the Sprint field that starts after today.
+    required: false
+    default: Asia/Kolkata
+
+outputs:
+  item-id:
+    description: ID of the project item for the issue. Empty when the action skipped.
+    value: ${{ steps.add.outputs.itemId }}
+
+runs:
+  using: composite
+  steps:
+    - name: Skip (no board token)
+      if: inputs.board-token == ''
+      shell: bash
+      run: echo "::notice::No board token was given (is the BOARD_TOKEN secret set in this repo?), so the issue was not added to the board."
+
+    - name: Add issue to board
+      id: add
+      if: inputs.board-token != ''
+      uses: actions/add-to-project@v1.0.2
+      with:
+        project-url: https://github.com/users/${{ inputs.owner }}/projects/${{ inputs.project-number }}
+        github-token: ${{ inputs.board-token }}
+
+    - name: Set default Priority, Size, Status and Sprint
+      if: inputs.board-token != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.board-token }}
+        ITEM_ID: ${{ steps.add.outputs.itemId }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        DEFAULTS: ${{ inputs.defaults }}
+        SPRINT_TZ: ${{ inputs.sprint-tz }}
+      run: bash "$GITHUB_ACTION_PATH/set-fields.sh"

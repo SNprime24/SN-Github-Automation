@@ -1,0 +1,52 @@
+# Lints the workflows and shell scripts in this repo and tests the add-to-board
+# action. Runs on every pull request and on pushes to main.
+name: Lint and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: actionlint (also runs shellcheck on run blocks)
+        run: |
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
+          ./actionlint -color
+      - name: shellcheck
+        run: shellcheck actions/*/*.sh tests/*/*.sh
+
+  test-set-fields:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run set-fields.sh against a fake gh
+        run: bash tests/add-to-board/test-set-fields.sh
+
+  test-skip-without-token:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the action with no token
+        id: board
+        uses: ./actions/add-to-board
+        with:
+          board-token: ''
+      - name: Check that it skipped
+        env:
+          ITEM_ID: ${{ steps.board.outputs.item-id }}
+        run: |
+          if [[ -n "$ITEM_ID" ]]; then
+            echo "::error::Expected no item ID without a token, got '$ITEM_ID'"
+            exit 1
+          fi
+          echo "Skipped as expected"
