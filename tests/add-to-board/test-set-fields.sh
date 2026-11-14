@@ -56,7 +56,7 @@ item() {
 
 # run_case NAME DEFAULTS EXPECTED_MUTATIONS EXPECTED_OUTPUT_GREP
 run_case() {
-  local name=$1 defaults=$2 expected=$3 expect_output=$4 output status
+  local name=$1 defaults=$2 expected=$3 expect_output=$4 output status line
   : >"$work/mutations.log"
   set +e
   output=$(PATH="$work/bin:$PATH" FAKE_GH_DIR="$work" GH_TOKEN=fake ITEM_ID=ITEM \
@@ -87,7 +87,7 @@ run_case() {
   else
     echo "FAIL  $name"
     echo "  output:"
-    sed 's/^/    /' <<<"$output"
+    while IFS= read -r line; do echo "    $line"; done <<<"$output"
     failures=$((failures + 1))
   fi
 }
