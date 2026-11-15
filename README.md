@@ -90,6 +90,8 @@ Without that line, they use the board the issue's card is already on, and ask if
 
 The skills use the GitHub and GitHub Projects MCP servers, and fall back to the `gh` CLI only when those aren't available. Either way, the board moves need access with the `project` scope (for `gh`: `gh auth refresh -s project`).
 
+**Writing style.** The skills write in the style of ASD-STE100 Simplified Technical English. See [`writing-style.md`](plugins/issue-workflow/references/writing-style.md) for the rules and examples. Skills load only when a task matches them. To use the style for all text, copy the rules into your `~/.claude/CLAUDE.md`.
+
 ## Versioning
 
 Callers pin to a major version, such as `@v1`, rather than `@main`.

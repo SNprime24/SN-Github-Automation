@@ -8,6 +8,8 @@ argument-hint: "[update] [repo] [issue-no]"
 
 **Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
 
+**Writing:** write all text as [writing-style.md](../../references/writing-style.md) tells you: issues, comments, PRs, commit messages and code comments. If the user's own `CLAUDE.md` has writing rules, they have priority.
+
 Issues written in a hurry often have a long, typo-filled title and a body that is just an empty form (`_No response_`). This skill rewrites such an issue into a proper task **without losing anything that was written**, asking the owner questions where needed. Later, it applies the changes that the owner asks for in comments (*comment mode*, step 8), and ticks off the checkboxes as work gets done (*update mode*, step 7).
 
 ## 1. Pick the issue(s)

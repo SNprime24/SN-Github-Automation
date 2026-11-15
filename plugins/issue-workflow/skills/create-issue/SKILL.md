@@ -8,6 +8,8 @@ argument-hint: "[repo] <short request>"
 
 **Tools:** use the GitHub MCP tools for issues, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools are not available or fail again and again.
 
+**Writing:** write all text as [writing-style.md](../../references/writing-style.md) tells you: issues, comments, PRs, commit messages and code comments. If the user's own `CLAUDE.md` has writing rules, they have priority.
+
 This skill makes a clear issue from a short request. It uses the same format as `refine-issue`: [issue-format.md](../../references/issue-format.md).
 
 ## 1. Find the repo and the request
