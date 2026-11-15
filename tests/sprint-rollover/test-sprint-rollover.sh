@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Runs actions/sprint-rollover/rollover.sh against a fake `gh` and checks which
-# cards it moves. Needs bash and jq.
-#
-#   bash tests/sprint-rollover/test-sprint-rollover.sh
+# Runs actions/sprint-rollover/rollover.sh against the fake gh.
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -10,8 +7,7 @@ script="$here/../../actions/sprint-rollover/rollover.sh"
 # shellcheck source=tests/lib/harness.sh
 source "$here/../lib/harness.sh"
 
-# Three 14-day sprints: Sprint 1 from 2026-01-01, Sprint 2 from 2026-01-15 and
-# Sprint 3 from 2026-01-29 to 2026-02-11.
+# 14-day sprints starting 2026-01-01, 2026-01-15 and 2026-01-29
 reset_data
 cat >"$data/project.json" <<'EOF'
 { "data": { "user": { "projectV2": {
@@ -57,8 +53,7 @@ cat >"$data/cards.json" <<EOF
 ] } } } } }
 EOF
 
-# C1, C2, C3 and C9 move. C4 (Backlog, earlier sprint), C5 (future sprint),
-# C6 (In progress), C7 (no Sprint) and C8 (archived) stay.
+# C1, C2, C3 and C9 move; C4 (earlier Backlog), C5 (future), C6 (In progress), C7 (no Sprint) and C8 (archived) stay
 moves="set project=PROJ item=C1 field=F_STATUS option=O_BACKLOG
 set project=PROJ item=C1 field=F_SPRINT iteration=S3
 comment issue=ISSUE_1 body=Rolled over from Sprint 2

@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-# Shared test setup for scripts that call gh. Source it from a test file.
-# It puts fake-gh.sh on PATH as `gh` and defines:
-#   $data         directory the fake gh reads its responses from
-#   reset_data    empties $data
-#   run_case      runs a script and checks its exit status, calls and output
-#   finish        prints the result and exits 1 if any case failed
+# Test setup shared by the script tests: puts fake-gh.sh on PATH and defines reset_data, run_case and finish.
 
 harness_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 work=$(mktemp -d)
@@ -20,10 +15,7 @@ reset_data() {
   mkdir -p "$data/issues" "$data/timeline"
 }
 
-# run_case NAME SCRIPT EXPECTED_STATUS EXPECTED_CALLS EXPECTED_OUTPUT [VAR=value...]
-#   EXPECTED_CALLS   the exact calls.log the fake gh should end up with, one call per line
-#   EXPECTED_OUTPUT  lines that must each appear somewhere in the output (empty for none)
-#   VAR=value        extra environment for the script. OWNER is "someone", PROJECT_NUMBER 1.
+# NAME SCRIPT EXPECTED_STATUS EXPECTED_CALLS EXPECTED_OUTPUT_LINES [VAR=value...]
 run_case() {
   local name=$1 script=$2 expected_status=$3 expected_calls=$4 expected_output=$5
   shift 5
@@ -48,8 +40,7 @@ run_case() {
     ok=0
   fi
   while IFS= read -r line; do
-    [[ -z $line ]] && continue
-    if ! grep -qF -- "$line" <<<"$output"; then
+    if [[ -n $line ]] && ! grep -qF -- "$line" <<<"$output"; then
       echo "  output doesn't contain: $line"
       ok=0
     fi

@@ -1,29 +1,11 @@
 #!/usr/bin/env bash
-# Stand-in for `gh`, used by the board-sweep and sprint-rollover tests.
-# It reads canned responses from $FAKE_GH_DIR and logs every change it is asked
-# to make, one line per call, to $FAKE_GH_DIR/calls.log.
-#
-# gh api graphql (with or without --paginate):
-#   mutations are logged as "<kind> <variables>", kind being add, set, reopen or
-#   comment. A comment fails if $FAKE_GH_DIR/fail-comment exists.
-#   Queries return:
-#     the project and its fields       project.json
-#     cards with their field values    items.json   (board sweep, filling)
-#     cards with closed issues         closed.json  (board sweep, reopening)
-#     cards with Status and Sprint     cards.json   (sprint rollover)
-#     an issue's Status changes        timeline/<issue id>.json, or none
-# gh repo list                         repos.json
-# gh issue list -R <owner>/<repo>      issues/<repo>.json, or []
-# gh search issues                     search.json, or []
-#
-# --jq is applied with the real jq, like gh does. --silent prints nothing.
+# Stand-in for gh: answers from files in $FAKE_GH_DIR and logs each change as "<kind> <variables>" to calls.log.
 set -euo pipefail
 
 dir=$FAKE_GH_DIR
 jq_filter=""
 silent=0
 
-# read_or FILE DEFAULT: the file's contents, or DEFAULT if it doesn't exist.
 read_or() {
   if [[ -e $1 ]]; then cat "$1"; else printf '%s\n' "$2"; fi
 }
@@ -60,9 +42,9 @@ if [[ $command == "api graphql" ]]; then
   done
 
   log() { printf '%s %s\n' "$1" "${vars[*]}" >>"$dir/calls.log"; }
-  issue_id=""
+  node_id=""
   for var in "${vars[@]}"; do
-    [[ $var == id=* ]] && issue_id=${var#id=}
+    [[ $var == id=* ]] && node_id=${var#id=}
   done
 
   case $query in
@@ -77,9 +59,8 @@ if [[ $command == "api graphql" ]]; then
       fi
       response='{}'
       ;;
-    *timelineItems*)
-      response=$(read_or "$dir/timeline/$issue_id.json" '{"data":{"node":{"timelineItems":{"nodes":[]}}}}')
-      ;;
+    *timelineItems*) response=$(read_or "$dir/timeline/$node_id.json" '{"data":{"node":{"timelineItems":{"nodes":[]}}}}') ;;
+    *'on ProjectV2Item {'*) response=$(<"$dir/item.json") ;;
     *viewerCanReopen*) response=$(<"$dir/closed.json") ;;
     *DraftIssue*) response=$(<"$dir/cards.json") ;;
     *fieldValues*) response=$(<"$dir/items.json") ;;

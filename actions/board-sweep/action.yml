@@ -1,62 +1,51 @@
 name: Board sweep
 description: >-
-  Safety net for a GitHub Projects board, meant to run on a schedule. Adds every
-  open issue from the owner's repos, and issues assigned to the owner elsewhere,
-  to the board. Fills empty Priority, Size, Status and recent Sprint fields,
-  checks that sprints haven't run out, and reopens closed issues whose card was
-  moved out of Done.
+  Scheduled safety net for a GitHub Projects board: adds missing issues, fills empty
+  fields and recent Sprints, checks sprints are left, and reopens issues moved out of Done.
 
 inputs:
   board-token:
-    description: >-
-      Classic personal access token with the `repo` and `project` scopes, usually
-      `secrets.BOARD_TOKEN`. Required: the sweep fails without it.
+    description: Classic personal access token with the `repo` and `project` scopes, usually `secrets.BOARD_TOKEN`.
     required: true
   owner:
     description: Login of the user that owns the project board and the repos to sweep.
-    required: false
-    default: SNprime24
+    required: true
   project-number:
     description: Number of the project board, from its URL (`/users/<owner>/projects/<number>`).
-    required: false
-    default: '13'
+    required: true
   skip-repos:
-    description: Space-separated names of the owner's repos whose issues are kept off the board.
+    description: Space-separated names of the owner's repos whose issues stay off the board. Empty for none.
     required: false
-    default: ''
   defaults:
-    description: >-
-      Space-separated `Field=Option` pairs for single-select fields. Only empty
-      fields are filled.
-    required: false
-    default: Priority=Normal Size=M Status=Backlog
+    description: Space-separated `Field=Option` pairs for single-select fields. Only empty fields are filled.
+    required: true
   sprint-tz:
-    description: >-
-      Timezone used to decide what "today" is. The next sprint is the first
-      iteration of the Sprint field that starts after today.
-    required: false
-    default: Asia/Kolkata
+    description: Timezone for "today". The next sprint is the first Sprint iteration that starts after today.
+    required: true
   sprint-fill-days:
-    description: >-
-      Only cards added in the last this many days, and not Done, get the next
-      sprint, so older cards without a Sprint stay that way. More than 1 so a
-      skipped run is caught up.
-    required: false
-    default: '3'
+    description: Only cards added in the last this many days, and not Done, get the next sprint.
+    required: true
   sprint-length-days:
     description: Expected sprint length in days. Upcoming sprints of another length get a warning.
-    required: false
-    default: '14'
+    required: true
 
 runs:
   using: composite
   steps:
-    - name: Check the board token
-      if: inputs.board-token == ''
+    - name: Check inputs
+      id: check
       shell: bash
-      run: |
-        echo "::error::No board token was given (is the BOARD_TOKEN secret set in this repo?), so the board can't be swept."
-        exit 1
+      env:
+        BOARD_TOKEN: ${{ inputs.board-token }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        DEFAULTS: ${{ inputs.defaults }}
+        SPRINT_TZ: ${{ inputs.sprint-tz }}
+        SPRINT_FILL_DAYS: ${{ inputs.sprint-fill-days }}
+        SPRINT_LENGTH_DAYS: ${{ inputs.sprint-length-days }}
+      run: >-
+        bash "$GITHUB_ACTION_PATH/../../lib/require-inputs.sh"
+        BOARD_TOKEN OWNER PROJECT_NUMBER DEFAULTS SPRINT_TZ SPRINT_FILL_DAYS SPRINT_LENGTH_DAYS
 
     - name: Add missing issues to the board
       shell: bash
@@ -79,10 +68,9 @@ runs:
         SPRINT_LENGTH_DAYS: ${{ inputs.sprint-length-days }}
       run: bash "$GITHUB_ACTION_PATH/fill-defaults.sh"
 
-    # Runs even when an earlier step failed (for example because no sprint is
-    # left), so issues still get reopened.
+    # Runs even when filling failed (for example because no sprint is left).
     - name: Reopen issues moved out of Done
-      if: ${{ !cancelled() && inputs.board-token != '' }}
+      if: ${{ !cancelled() && steps.check.outcome == 'success' }}
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.board-token }}
