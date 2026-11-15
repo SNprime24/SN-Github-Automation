@@ -1,0 +1,91 @@
+name: Board sweep
+description: >-
+  Safety net for a GitHub Projects board, meant to run on a schedule. Adds every
+  open issue from the owner's repos, and issues assigned to the owner elsewhere,
+  to the board. Fills empty Priority, Size, Status and recent Sprint fields,
+  checks that sprints haven't run out, and reopens closed issues whose card was
+  moved out of Done.
+
+inputs:
+  board-token:
+    description: >-
+      Classic personal access token with the `repo` and `project` scopes, usually
+      `secrets.BOARD_TOKEN`. Required: the sweep fails without it.
+    required: true
+  owner:
+    description: Login of the user that owns the project board and the repos to sweep.
+    required: false
+    default: SNprime24
+  project-number:
+    description: Number of the project board, from its URL (`/users/<owner>/projects/<number>`).
+    required: false
+    default: '13'
+  skip-repos:
+    description: Space-separated names of the owner's repos whose issues are kept off the board.
+    required: false
+    default: ''
+  defaults:
+    description: >-
+      Space-separated `Field=Option` pairs for single-select fields. Only empty
+      fields are filled.
+    required: false
+    default: Priority=Normal Size=M Status=Backlog
+  sprint-tz:
+    description: >-
+      Timezone used to decide what "today" is. The next sprint is the first
+      iteration of the Sprint field that starts after today.
+    required: false
+    default: Asia/Kolkata
+  sprint-fill-days:
+    description: >-
+      Only cards added in the last this many days, and not Done, get the next
+      sprint, so older cards without a Sprint stay that way. More than 1 so a
+      skipped run is caught up.
+    required: false
+    default: '3'
+  sprint-length-days:
+    description: Expected sprint length in days. Upcoming sprints of another length get a warning.
+    required: false
+    default: '14'
+
+runs:
+  using: composite
+  steps:
+    - name: Check the board token
+      if: inputs.board-token == ''
+      shell: bash
+      run: |
+        echo "::error::No board token was given (is the BOARD_TOKEN secret set in this repo?), so the board can't be swept."
+        exit 1
+
+    - name: Add missing issues to the board
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.board-token }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        SKIP_REPOS: ${{ inputs.skip-repos }}
+      run: bash "$GITHUB_ACTION_PATH/add-missing.sh"
+
+    - name: Fill empty Priority, Size, Status and Sprint
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.board-token }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        DEFAULTS: ${{ inputs.defaults }}
+        SPRINT_TZ: ${{ inputs.sprint-tz }}
+        SPRINT_FILL_DAYS: ${{ inputs.sprint-fill-days }}
+        SPRINT_LENGTH_DAYS: ${{ inputs.sprint-length-days }}
+      run: bash "$GITHUB_ACTION_PATH/fill-defaults.sh"
+
+    # Runs even when an earlier step failed (for example because no sprint is
+    # left), so issues still get reopened.
+    - name: Reopen issues moved out of Done
+      if: ${{ !cancelled() && inputs.board-token != '' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.board-token }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+      run: bash "$GITHUB_ACTION_PATH/reopen-moved.sh"
