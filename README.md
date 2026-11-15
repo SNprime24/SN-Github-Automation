@@ -63,7 +63,7 @@ This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin 
 | Skill | When | What it does |
 |---|---|---|
 | `start-work` | Before any code is written for an issue | Reads the issue, creates a branch named `<type>/<repo-initials>-<issue-number>-<short-slug>` (e.g. `feat/sga-24-claude-plugin`), and moves the issue's card to **In Progress** on its board. |
-| `finish-work` | When the work is done | Commits and pushes, opens a pull request that closes the issue, then moves the card to **Review** on the board. It never merges. |
+| `finish-work` | Automatically, as soon as the work is done (you can also ask for it) | Commits and pushes, opens a pull request that closes the issue, then moves the card to **Review** on the board. It never merges. |
 | `refine-issue` | Any time | Rewrites a rough issue into a summary, to-do list and definition of done, or ticks off its checkboxes as work lands. Updates the issue directly and reports what it changed, so you can check it on the issue and the board. |
 
 **Install** (in Claude Code):

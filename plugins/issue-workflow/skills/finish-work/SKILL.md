@@ -1,6 +1,6 @@
 ---
 name: finish-work
-description: Finish work on a GitHub issue. Commits what's left, pushes the branch, opens a pull request that closes the issue, then moves the issue's card to Review on its project board. Never merges. Use when the work for an issue is done, or when asked to finish, wrap up, ship, "open the PR" or "send it for review" (e.g. "finish issue 12", "open a PR for this", "move it to review").
+description: Finish work on a GitHub issue. Commits what's left, pushes the branch, opens a pull request that closes the issue, then moves the issue's card to Review on its project board. Never merges. Run it yourself, without being asked, as soon as the work for an issue is done, especially work begun with start-work. Also use when asked to finish, wrap up, ship, "open the PR" or "send it for review" (e.g. "finish issue 12", "open a PR for this", "move it to review").
 argument-hint: "[repo] [issue-number]"
 ---
 
@@ -9,6 +9,8 @@ argument-hint: "[repo] [issue-number]"
 **Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
 
 Run this when the code for an issue is done. It pairs with `start-work`.
+
+**Run it on your own.** Don't wait for the user to ask: as soon as the issue's work is done (its To-do is handled, or the change the user asked for is complete), go straight on to this skill. Skip it only if the user said not to open a PR yet, or the work isn't finished (then say what's left). Because the user reviews every PR before it merges, opening one early is safe; leaving finished work unpushed is not.
 
 ## 1. Work out the issue and branch
 

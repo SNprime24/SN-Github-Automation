@@ -8,7 +8,7 @@ argument-hint: "[repo] <issue-number>"
 
 **Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
 
-Run this **before** changing any code for an issue. When the work is done, use the `finish-work` skill.
+Run this **before** changing any code for an issue. When the work is done, go straight on to the `finish-work` skill yourself; don't wait to be asked.
 
 ## 1. Find the issue
 
@@ -65,4 +65,4 @@ Follow [board-moves.md](../../references/board-moves.md): find the board, pick t
 
 ## 6. Report
 
-In two or three lines: the branch name, the board move (or why it was skipped), and the plan you'll follow from the issue. Then start the work.
+In two or three lines: the branch name, the board move (or why it was skipped), and the plan you'll follow from the issue. Then start the work, and run `finish-work` as soon as it's done.
