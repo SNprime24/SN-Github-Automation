@@ -1,0 +1,16 @@
+{
+  "name": "sn-github-automation",
+  "owner": {
+    "name": "SNprime24"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for working through GitHub issues: branches, project-board moves and pull requests."
+  },
+  "plugins": [
+    {
+      "name": "issue-workflow",
+      "source": "./plugins/issue-workflow",
+      "description": "Start work on an issue (branch + In Progress on the board), finish it (PR + Review on the board), and refine rough issues into clear tasks."
+    }
+  ]
+}

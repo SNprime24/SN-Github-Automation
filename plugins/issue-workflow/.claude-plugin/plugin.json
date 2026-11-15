@@ -1,0 +1,10 @@
+{
+  "name": "issue-workflow",
+  "version": "1.0.0",
+  "description": "Start work on a GitHub issue (branch + In Progress on the board), finish it (PR + Review on the board), and refine rough issues into clear tasks.",
+  "author": {
+    "name": "SNprime24"
+  },
+  "repository": "https://github.com/SNprime24/SN-Github-Automation",
+  "keywords": ["github", "issues", "projects", "workflow"]
+}
