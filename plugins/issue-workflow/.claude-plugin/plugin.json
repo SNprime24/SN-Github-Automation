@@ -1,7 +1,7 @@
 {
   "name": "issue-workflow",
-  "version": "1.0.0",
-  "description": "Start work on a GitHub issue (branch + In Progress on the board), finish it (PR + Review on the board), and refine rough issues into clear tasks.",
+  "version": "1.1.0",
+  "description": "Create clear GitHub issues, start work on them (branch + In Progress on the board), finish them (PR + Review on the board), and refine rough issues into clear tasks.",
   "author": {
     "name": "SNprime24"
   },
