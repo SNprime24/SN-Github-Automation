@@ -10,6 +10,7 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 | [`actions/board-sweep`](actions/board-sweep) | Composite action, scheduled | Safety net: adds open issues that aren't on the board yet, fills empty fields, warns when sprints run out, and reopens closed issues whose card was moved out of Done. |
 | [`actions/sprint-rollover`](actions/sprint-rollover) | Composite action, scheduled | At the start of a sprint, moves unfinished Todo and Backlog cards to Backlog in the next sprint. Has a dry run. |
 | [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow (old copy) | The same logic as a standalone workflow, from before the action existed. Repos that still have a copy keep working, and they move to the action one at a time. It still lists the `transferred` trigger, so transferring an issue **out** of one of those repos shows a failed run there ([#8](https://github.com/SNprime24/SN-Github-Automation/issues/8)). The issue itself still reaches the board from its new repo. |
+| [`plugins/issue-workflow`](plugins/issue-workflow) | Claude Code plugin | Skills that take Claude through an issue: `start-work` (branch + In Progress on the board), `finish-work` (pull request + Review on the board) and `refine-issue` (turns a rough issue into a clear task). See [Using the Claude Code plugin](#using-the-claude-code-plugin). |
 | [`lint.yml`](.github/workflows/lint.yml) | This repo's CI | Lints the workflows and shell scripts here and tests the actions, on every pull request and push to `main`. |
 
 ## Using the add-to-board action
@@ -55,6 +56,39 @@ They need the same `BOARD_TOKEN` secret as add-to-board, and unlike add-to-board
 
 Their logs name repos and issue URLs, and run logs are kept in the repo that runs the workflow. To keep those private, put the callers in a **private** repo. The actions can still come from this public one.
 
+## Using the Claude Code plugin
+
+This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin gives Claude the same way of working in every repo:
+
+| Skill | When | What it does |
+|---|---|---|
+| `start-work` | Before any code is written for an issue | Reads the issue, creates a branch named `<type>/<repo-initials>-<issue-number>-<short-slug>` (e.g. `feat/sga-24-claude-plugin`), and moves the issue's card to **In Progress** on its board. |
+| `finish-work` | When the work is done | Commits and pushes, opens a pull request that closes the issue, then moves the card to **Review** on the board. It never merges. |
+| `refine-issue` | Any time | Rewrites a rough issue into a summary, to-do list and definition of done, or ticks off its checkboxes as work lands. Changes the issue only after you approve. |
+
+**Install** (in Claude Code):
+
+```text
+/plugin marketplace add SNprime24/SN-Github-Automation
+/plugin install issue-workflow@sn-github-automation
+```
+
+**Update** after a new version is pushed here:
+
+```text
+/plugin marketplace update sn-github-automation
+```
+
+**Which board?** The skills don't name one. They use the board your own setup names. For example, add a line like this to your `~/.claude/CLAUDE.md`, which stays on your machine:
+
+```markdown
+My project board: user <login>, project <number>. Use the issue-workflow skills when starting and finishing work on an issue.
+```
+
+Without that line, they use the board the issue's card is already on, and ask if there's more than one or none. Columns are matched by name: **In Progress**, and any column containing "Review" (such as `In Review / Testing`).
+
+The board moves need a token with the `project` scope: the GitHub Projects MCP server, or `gh auth refresh -s project` for the `gh` CLI.
+
 ## Versioning
 
 Callers pin to a major version, such as `@v1`, rather than `@main`.
@@ -64,11 +98,15 @@ Callers pin to a major version, such as `@v1`, rather than `@main`.
 
 Pinning to `@main` isn't recommended, because a broken commit there would break every caller at once.
 
+The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Bump it with every change to the plugin, or `/plugin marketplace update` won't pick the change up.
+
 ## Layout
 
 ```text
+.claude-plugin/      The Claude Code marketplace manifest (marketplace.json)
 .github/workflows/   Reusable workflows (on: workflow_call) and this repo's own workflows
 actions/<name>/      One composite action per folder: action.yml, its scripts and a short README
+plugins/<name>/      One Claude Code plugin per folder: .claude-plugin/plugin.json and its skills
 lib/                 Shell helpers shared by the actions' scripts
 tests/<name>/        Tests for the action of the same name
 tests/lib/           The fake gh and the test helpers the tests share
@@ -89,6 +127,7 @@ Every pull request runs [`lint.yml`](.github/workflows/lint.yml):
 - **shellcheck** on the scripts in `lib/`, `actions/` and `tests/`
 - **The script tests**, which run each action's scripts against a fake `gh` and check exactly which changes they make
 - **The no-token checks:** add-to-board must skip without a token, and board-sweep and sprint-rollover must fail
+- **The plugin manifests** must be valid JSON. For a fuller check, run `claude plugin validate .` and `claude plugin validate plugins/issue-workflow` locally
 
 The script tests can also be run locally with bash and jq:
 
