@@ -6,6 +6,8 @@ argument-hint: "[repo] <issue-number>"
 
 # Start work on an issue
 
+**Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
+
 Run this **before** changing any code for an issue. When the work is done, use the `finish-work` skill.
 
 ## 1. Find the issue
@@ -20,7 +22,7 @@ If nothing is given, use the issue named in the request. If there is still none,
 
 ## 2. Read it
 
-Read the title, body, labels, state and comments (GitHub MCP `issue_read`, or `gh issue view <n> --repo <owner/name> --comments`).
+Read the title, body, labels, state and comments (GitHub MCP `issue_read`; fallback `gh issue view <n> --repo <owner/name> --comments`).
 
 - If it is **closed**, ask before going on.
 - If it has a **To-do** or **Done when** list, that is the plan for the work.

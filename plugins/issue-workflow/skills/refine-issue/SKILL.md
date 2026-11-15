@@ -6,6 +6,8 @@ argument-hint: "[update] [repo] [issue-no]"
 
 # Refine an issue
 
+**Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
+
 Issues written in a hurry often have a long, typo-filled title and a body that is just an empty form (`_No response_`). This skill rewrites such an issue into a proper task **without losing anything that was written**, asking the owner questions where needed. Later, as work gets done, it also ticks off that task's checkboxes (*update mode*, step 7).
 
 ## 1. Pick the issue(s)
@@ -35,10 +37,10 @@ If the arguments are empty, the request in chat may still name the issue ("refin
 
 Read before you write:
 
-- The issue itself: title, body, labels, state, comments (GitHub MCP `issue_read`, or `gh issue view <n> --repo <owner/name> --comments`).
+- The issue itself: title, body, labels, state, comments (GitHub MCP `issue_read`; fallback `gh issue view <n> --repo <owner/name> --comments`).
 - Its family: parent issue and sub-issues. A sub-issue's scope comes from its parent, and a parent's to-do list should mention its sub-issues.
 - Anything the issue names: a file, workflow or doc in the repo (read it), or a linked issue or PR.
-- The repo's **label conventions**: its labels (`gh label list`), plus any rules in its README or `CONTRIBUTING.md`.
+- The repo's **label conventions**: its labels (GitHub MCP label tools; fallback `gh label list`), plus any rules in its README or `CONTRIBUTING.md`.
 - Its **board card**, if it has one: find the board as in [board-moves.md](../../references/board-moves.md), and read the card's fields (for example Priority, Size, Sprint, Due date) so the suggestion builds on what's already set.
 
 ## 3. Ask the owner what you can't infer
@@ -113,7 +115,7 @@ Then ask with `AskUserQuestion`: **Update the issue** / **Change something** / *
 
 Once approved:
 
-- Update title, body and labels (GitHub MCP `issue_write` with method `update`, or `gh issue edit`). Don't change state, assignees, milestone or issue type.
+- Update title, body and labels (GitHub MCP `issue_write` with method `update`; fallback `gh issue edit`). Don't change state, assignees, milestone or issue type.
 - If the owner agreed to a split, create each sub-issue with the same structure and link it to the parent.
 - If the owner accepted the board suggestion, set those fields on the card. Otherwise leave the board alone.
 - Report the issue link and what changed in one or two lines, then go on to the next issue if there is one.

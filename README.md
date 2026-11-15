@@ -87,7 +87,7 @@ My project board: user <login>, project <number>. Use the issue-workflow skills 
 
 Without that line, they use the board the issue's card is already on, and ask if there's more than one or none. Columns are matched by name: **In Progress**, and any column containing "Review" (such as `In Review / Testing`).
 
-The board moves need a token with the `project` scope: the GitHub Projects MCP server, or `gh auth refresh -s project` for the `gh` CLI.
+The skills use the GitHub and GitHub Projects MCP servers, and fall back to the `gh` CLI only when those aren't available. Either way, the board moves need access with the `project` scope (for `gh`: `gh auth refresh -s project`).
 
 ## Versioning
 

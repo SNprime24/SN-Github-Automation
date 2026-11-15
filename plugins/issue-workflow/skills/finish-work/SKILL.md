@@ -6,6 +6,8 @@ argument-hint: "[repo] [issue-number]"
 
 # Finish work on an issue
 
+**Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
+
 Run this when the code for an issue is done. It pairs with `start-work`.
 
 ## 1. Work out the issue and branch
@@ -32,7 +34,7 @@ Run this when the code for an issue is done. It pairs with `start-work`.
 - **Body:** what changed and why, how it was tested, and a closing line that links the issue: `Closes #<n>` for the same repo, `Closes <owner>/<repo>#<n>` for another one.
 - If a PR for this branch already exists, update it instead of opening a second one.
 
-Use GitHub MCP `create_pull_request` or `gh pr create`. **Never merge the PR and never turn on auto-merge.** The user reviews and merges.
+Use GitHub MCP `create_pull_request` (fallback `gh pr create`). **Never merge the PR and never turn on auto-merge.** The user reviews and merges.
 
 ## 5. Move it to Review in Board
 
