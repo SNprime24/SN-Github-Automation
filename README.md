@@ -90,6 +90,31 @@ Without that line, they use the board the issue's card is already on, and ask if
 
 The skills use the GitHub and GitHub Projects MCP servers, and fall back to the `gh` CLI only when those aren't available. Either way, the board moves need access with the `project` scope (for `gh`: `gh auth refresh -s project`).
 
+**Writing style.** The skills write in the style of ASD-STE100 Simplified Technical English. The rules are in [`writing-style.md`](plugins/issue-workflow/references/writing-style.md), with examples. Skills load only when a task matches them. To use the style for all text, for example a code comment or a chat reply, copy this snippet into your `~/.claude/CLAUDE.md`:
+
+```markdown
+## Writing style (ASD-STE100)
+
+Write in the style of ASD-STE100 Simplified Technical English. Use it for issues, issue comments, PRs, PR comments, commit messages, code comments and chat replies. Make chat replies short. Use the writing rules only, not the STE dictionary.
+
+- Use a maximum of 20 words in an instruction sentence.
+- Use a maximum of 25 words in a description sentence.
+- Write one instruction in each sentence.
+- Use the imperative for instructions. Example: "Set the Status."
+- Use the active voice.
+- Use a maximum of 6 sentences in a paragraph.
+- Use one word for one meaning. Do not use different words for the same thing.
+- Use simple words. Example: write "make sure", not "verify" or "ensure".
+- You can use technical names: code names, file names, `PR`, `workflow`.
+- Write facts directly. If you are not sure, write that in a separate sentence. Example: "I did not test this on Windows."
+- Put the most important information first.
+- Use a list for 3 or more items.
+
+Change an old code comment only when you edit that code. In repos that other people own, the style of that repo has priority.
+```
+
+The rules in the snippet and in `writing-style.md` must be the same. If you change one, change the other.
+
 ## Versioning
 
 Callers pin to a major version, such as `@v1`, rather than `@main`.
@@ -129,6 +154,7 @@ Every pull request runs [`lint.yml`](.github/workflows/lint.yml):
 - **The script tests**, which run each action's scripts against a fake `gh` and check exactly which changes they make
 - **The no-token checks:** add-to-board must skip without a token, and board-sweep and sprint-rollover must fail
 - **The plugin manifests** must be valid JSON. For a fuller check, run `claude plugin validate .` and `claude plugin validate plugins/issue-workflow` locally
+- **The writing rules** in the README snippet and in `writing-style.md` must be the same
 
 The script tests can also be run locally with bash and jq:
 
