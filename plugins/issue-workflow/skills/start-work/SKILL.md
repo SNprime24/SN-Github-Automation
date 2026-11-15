@@ -8,6 +8,8 @@ argument-hint: "[repo] <issue-number>"
 
 **Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
 
+**Writing:** write all text as [writing-style.md](../../references/writing-style.md) tells you: issues, comments, PRs, commit messages and code comments. If the user's own `CLAUDE.md` has writing rules, they have priority.
+
 Run this **before** changing any code for an issue. When the work is done, go straight on to the `finish-work` skill yourself; don't wait to be asked.
 
 ## 1. Find the issue

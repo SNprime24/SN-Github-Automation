@@ -56,7 +56,7 @@ The last line of the body is a hidden marker. GitHub does not show it.
 - **Keep it short.** A small task needs a short issue.
 - **Public repos:** do not write private details, for example private repo names, internal links or tokens.
 - **Values with a different location:** a due date goes on the board card. A category goes in a label. Do not copy them into the body, because a copy becomes old.
-- **Writing style:** follow the writing rules of the user, for example the rules in their `CLAUDE.md`.
+- **Writing style:** write all text as [writing-style.md](writing-style.md) tells you. If the user's own `CLAUDE.md` has writing rules, they have priority.
 
 ## Labels
 

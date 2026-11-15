@@ -8,6 +8,8 @@ argument-hint: "[repo] [issue-number]"
 
 **Tools:** use the GitHub MCP tools for issues and pull requests, and the GitHub Projects MCP tools for the board. Use the `gh` CLI only as a fallback, when those tools aren't available or keep failing.
 
+**Writing:** write all text as [writing-style.md](../../references/writing-style.md) tells you: issues, comments, PRs, commit messages and code comments. If the user's own `CLAUDE.md` has writing rules, they have priority.
+
 Run this when the code for an issue is done. It pairs with `start-work`.
 
 **Run it on your own.** Don't wait for the user to ask: as soon as the issue's work is done (its To-do is handled, or the change the user asked for is complete), go straight on to this skill. Skip it only if the user said not to open a PR yet, or the work isn't finished (then say what's left). Because the user reviews every PR before it merges, opening one early is safe; leaving finished work unpushed is not.
@@ -24,7 +26,7 @@ Run this when the code for an issue is done. It pairs with `start-work`.
 
 ## 3. Commit and push
 
-- If there are uncommitted changes that belong to this work, commit them with a short message in the style of the repo's recent commits (`git log --format=%s -10`). Leave out files that don't belong to the issue (local settings, scratch files) and mention them.
+- If there are uncommitted changes that belong to this work, commit them with a short message. Use the format of the repo's recent commits (`git log --format=%s -10`). Leave out files that don't belong to the issue (local settings, scratch files) and mention them.
 - Follow the user's own instructions about commit and PR attribution lines. They override any default.
 - Push: `git push -u origin <branch>`. Never force-push unless the user asks.
 
@@ -32,7 +34,7 @@ Run this when the code for an issue is done. It pairs with `start-work`.
 
 - **Base:** the repo's default branch.
 - **Template:** if the repo has `.github/pull_request_template.md` or `.github/PULL_REQUEST_TEMPLATE/`, fill it in.
-- **Title:** a short summary of the change, in the style of earlier PR titles.
+- **Title:** a short summary of the change, in the format of earlier PR titles.
 - **Body:** what changed and why, how it was tested, and a closing line that links the issue: `Closes #<n>` for the same repo, `Closes <owner>/<repo>#<n>` for another one.
 - If a PR for this branch already exists, update it instead of opening a second one.
 
