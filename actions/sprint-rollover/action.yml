@@ -1,0 +1,57 @@
+name: Sprint rollover
+description: >-
+  Run at the start of each sprint. Moves Todo cards from the current or an
+  earlier sprint, and Backlog cards from the current sprint, to Backlog in the
+  next sprint, and comments on each moved issue.
+
+inputs:
+  board-token:
+    description: >-
+      Classic personal access token with the `repo` and `project` scopes, usually
+      `secrets.BOARD_TOKEN`. Required: the rollover fails without it.
+    required: true
+  owner:
+    description: Login of the user that owns the project board.
+    required: false
+    default: SNprime24
+  project-number:
+    description: Number of the project board, from its URL (`/users/<owner>/projects/<number>`).
+    required: false
+    default: '13'
+  sprint-tz:
+    description: Timezone used to decide what "today" is when finding the sprint that is starting.
+    required: false
+    default: Asia/Kolkata
+  as-of:
+    description: Act as if today is this date (YYYY-MM-DD). Empty means today.
+    required: false
+    default: ''
+  dry-run:
+    description: "`true` to only list the cards that would move, without changing anything."
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Check the board token
+      if: inputs.board-token == ''
+      shell: bash
+      run: |
+        echo "::error::No board token was given (is the BOARD_TOKEN secret set in this repo?), so nothing was rolled over."
+        exit 1
+
+    # A scheduled run does nothing unless a sprint starts today, because cron
+    # can't count fortnights. Any other run (such as a manual one) skips that
+    # check, so it can catch up after a missed day.
+    - name: Roll Todo and Backlog cards to the next sprint
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.board-token }}
+        OWNER: ${{ inputs.owner }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        SPRINT_TZ: ${{ inputs.sprint-tz }}
+        AS_OF: ${{ inputs.as-of }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        ONLY_ON_SPRINT_START: ${{ github.event_name == 'schedule' }}
+      run: bash "$GITHUB_ACTION_PATH/rollover.sh"
