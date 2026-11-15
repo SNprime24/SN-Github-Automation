@@ -57,48 +57,21 @@ Don't ask about things the issue, its parent, the repo or its docs already answe
 
 ## 4. Draft the refined issue
 
-**Title:** a short action in sentence case, ideally under 10 words, typos fixed, e.g. *Add README table of workflow runs and costs*. Keep the owner's meaning, not their exact words.
+Write the title, body, labels and board fields as [issue-format.md](../../references/issue-format.md) tells you. Then apply these extra rules for a refine:
 
-**Body:** use this structure. Leave out a section only if it would be empty, but always keep *Done when*, *Notes* and the original text.
+- **Keep the original text.** Add this block at the end of the body, every time. Do not change the original text in it.
 
-If the issue form put values that have a proper home elsewhere into the body (a due date that belongs on the board card, a category that is a label), move them there instead of keeping a copy in the body, which goes stale.
+  ```markdown
+  <details><summary>Original issue text</summary>
 
-```markdown
-## Summary
-One or two sentences: what this is and why it matters.
+  The original title and body, exactly as written.
 
-## Context
-Background, the parent issue (#N), related files, issues or links. Leave this out if there's none.
+  </details>
+  ```
 
-## To-do
-- [ ] Concrete step, starting with a verb
-- [ ] …
-- [ ] Sub-issue #N (for a parent issue)
-
-## Done when
-- [ ] Checkable outcome (e.g. "README has a table with workflow, runs/month and monthly cost")
-
-## Notes
-Open questions, assumptions you made, anything the owner said in answers that doesn't fit above.
-
-<details><summary>Original issue text</summary>
-
-The original title and body, exactly as written.
-
-</details>
-```
-
-Rules:
-
-- **Keep the original.** Put the original title and body in the `<details>` block, unchanged, every time.
-- **Don't make things up.** If something wasn't stated or answered, put it under *Notes* as an assumption or open question rather than presenting it as fact.
-- **To-do items** should take a few hours at most each. If there are more than ~8, suggest splitting.
-- **Keep it short.** A small task needs a short issue.
-- **Public repos:** don't add private details (private repo names, internal links, tokens) that the original didn't already contain.
-
-**Labels:** only labels the repo already has, following its documented conventions. Typically one type label (bug, feature/enhancement, docs, …) plus any category or area label the repo uses. Keep labels the owner already added unless they contradict the new ones; if they do, ask. Don't create new labels without asking.
-
-**Board fields**, only for fields the board actually has: for example Priority and Size from their existing options, and a Due date (YYYY-MM-DD) if there is one. No deadline means leave the date empty.
+- **Public repos:** do not add private details that the original did not contain.
+- **Labels:** keep the labels that the owner added. If they contradict the new labels, ask.
+- **Board fields:** start from the values that are on the card now.
 
 ## 5. Apply
 
