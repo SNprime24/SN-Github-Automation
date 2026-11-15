@@ -1,6 +1,6 @@
 ---
 name: refine-issue
-description: Turn a GitHub issue that was written quickly (a rough title, an empty or half-filled body) into a clear task with a clean title, a summary, a to-do checklist, a definition of done, notes, and the right labels. Also updates an issue that's already refined, ticking off its To-do and Done when checkboxes as work gets done. Asks the owner questions when something can't be inferred, shows the draft or the changes, and updates the issue only after they approve. Use when asked to refine, clean up, polish, rewrite, expand or "fix up" an issue (e.g. "refine issue 14", "clean up my rough issues"), or to update its progress, tick or check off its boxes, or mark steps done (e.g. "update issue 15", "tick off what's done on 17").
+description: Turn a GitHub issue that was written quickly (a rough title, an empty or half-filled body) into a clear task with a clean title, a summary, a to-do checklist, a definition of done, notes, and the right labels. Also updates an issue that's already refined, ticking off its To-do and Done when checkboxes as work gets done. Asks the owner questions when something can't be inferred, then updates the issue and reports what changed. Use when asked to refine, clean up, polish, rewrite, expand or "fix up" an issue (e.g. "refine issue 14", "clean up my rough issues"), or to update its progress, tick or check off its boxes, or mark steps done (e.g. "update issue 15", "tick off what's done on 17").
 argument-hint: "[update] [repo] [issue-no]"
 ---
 
@@ -31,7 +31,7 @@ If the arguments are empty, the request in chat may still name the issue ("refin
 - **Refine mode** (steps 2–6) otherwise.
 
 - If no issue number was given at all, list open issues in the chosen repo and pick those that look rough: a body with only `_No response_` fields, no labels, a title longer than ~10 words or full of typos. Show the list and ask which ones to refine. In update mode, list open issues that have unchecked boxes instead.
-- Handle **one issue at a time**, finishing each (approved or skipped) before the next.
+- Handle **one issue at a time**, finishing each before the next.
 
 ## 2. Gather context
 
@@ -41,7 +41,7 @@ Read before you write:
 - Its family: parent issue and sub-issues. A sub-issue's scope comes from its parent, and a parent's to-do list should mention its sub-issues.
 - Anything the issue names: a file, workflow or doc in the repo (read it), or a linked issue or PR.
 - The repo's **label conventions**: its labels (GitHub MCP label tools; fallback `gh label list`), plus any rules in its README or `CONTRIBUTING.md`.
-- Its **board card**, if it has one: find the board as in [board-moves.md](../../references/board-moves.md), and read the card's fields (for example Priority, Size, Sprint, Due date) so the suggestion builds on what's already set.
+- Its **board card**, if it has one: find the board as in [board-moves.md](../../references/board-moves.md), and read the card's fields (for example Priority, Size, Sprint, Due date) so the values you set build on what's already there.
 
 ## 3. Ask the owner what you can't infer
 
@@ -98,27 +98,19 @@ Rules:
 
 **Labels:** only labels the repo already has, following its documented conventions. Typically one type label (bug, feature/enhancement, docs, …) plus any category or area label the repo uses. Keep labels the owner already added unless they contradict the new ones; if they do, ask. Don't create new labels without asking.
 
-**Board suggestion** (don't apply yet), only for fields the board actually has: for example Priority and Size from their existing options, with a one-line reason each, and a Due date (YYYY-MM-DD) if there is one. If the card already has a different value, show both and ask which to keep. No deadline means leave the date empty.
+**Board fields**, only for fields the board actually has: for example Priority and Size from their existing options, and a Due date (YYYY-MM-DD) if there is one. No deadline means leave the date empty.
 
-## 5. Show the draft and get approval
+## 5. Apply
 
-Show the owner, in chat:
-
-1. Old title → new title
-2. The new body, rendered as markdown
-3. Labels to add or remove
-4. The board suggestion, if any
-
-Then ask with `AskUserQuestion`: **Update the issue** / **Change something** / **Skip it**. On *Change something*, revise and show it again. Never write to GitHub before a clear yes for that specific issue.
-
-## 6. Apply
-
-Once approved:
+Don't wait for approval. The owner checks the result on the issue and the board, and asks for changes or runs this skill again if something is off.
 
 - Update title, body and labels (GitHub MCP `issue_write` with method `update`; fallback `gh issue edit`). Don't change state, assignees, milestone or issue type.
-- If the owner agreed to a split, create each sub-issue with the same structure and link it to the parent.
-- If the owner accepted the board suggestion, set those fields on the card. Otherwise leave the board alone.
-- Report the issue link and what changed in one or two lines, then go on to the next issue if there is one.
+- Set the board fields on the card.
+- If the owner agreed to a split in step 3, create each sub-issue with the same structure and link it to the parent. Don't split without that answer.
+
+## 6. Report
+
+In a few lines: the issue link, old title → new title, labels added or removed, and board fields set (old → new for any value you changed). Then go on to the next issue if there is one.
 
 ## 7. Update mode: tick off checkboxes
 
@@ -126,6 +118,6 @@ For an issue that's already refined. The job is to bring its checkboxes up to da
 
 1. **Read** the issue body, comments and sub-issues, and look for evidence of progress: PRs that reference or close the issue, recent commits, and the files the To-do names (check whether the change is actually there, on the default branch or on the PR's branch).
 2. **Work out each box.** Mark a box done only when there is evidence or the owner says so. When evidence is missing or only partial, ask: one `AskUserQuestion` with `multiSelect` per section (To-do, Done when), listing the unchecked items, with your evidence in each description. At most 4 items per question, so split long lists. Also ask whether any ticked box should be unticked if the evidence says the work was undone.
-3. **Show the changes** in chat: each box that changes (`[ ]` → `[x]` or back), with its reason, and how many boxes are done out of how many in each section. If the owner mentioned new steps or facts, show them as added To-do items or *Notes* lines. Ask **Update the issue** / **Change something** / **Skip it**.
-4. **Apply** by updating the `body` only. Start from the body you just read and change only the checkbox characters and any agreed additions. Every other character stays the same, including the original text in `<details>`. Re-read the issue just before writing; if it changed since step 1, start again from the new body.
+3. **Apply** by updating the `body` only, without waiting for approval. Start from the body you just read and change only the checkbox characters, plus any new steps or facts the owner mentioned (as To-do items or *Notes* lines). Every other character stays the same, including the original text in `<details>`. Re-read the issue just before writing; if it changed since step 1, start again from the new body.
+4. **Report** each box that changed (`[ ]` → `[x]` or back) with its reason, and how many boxes are done out of how many in each section.
 5. **Don't** change the title, labels, state or the board card. If every Done when box is now ticked, say so: the issue closes when its PR merges, or the owner can close it.
