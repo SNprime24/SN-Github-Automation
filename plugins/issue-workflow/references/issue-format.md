@@ -29,9 +29,25 @@ Background, the parent issue (#N), related files, issues or links.
 
 ## Notes
 Open questions, assumptions, and facts from the owner that do not go in a different section.
+
+<!-- issue-workflow: refined 2026-11-15T08:30:00Z -->
 ```
 
-`refine-issue` also adds the original text at the end. See that skill.
+`refine-issue` also adds the original text before the marker. See that skill.
+
+## Marker
+
+The last line of the body is a hidden marker. GitHub does not show it.
+
+```markdown
+<!-- issue-workflow: refined <UTC time> -->
+```
+
+- Write the time in the format `YYYY-MM-DDTHH:MM:SSZ`, in UTC.
+- `create-issue` adds the marker. `refine-issue` adds it or changes its time after each change.
+- Use the time when you read the comments of the issue, not the time when you write. Then a comment that arrives while you work is not lost.
+- A comment from the owner after this time is a **new comment**. `refine-issue` applies new comments. See that skill.
+- Keep only one marker. If you find more than one, keep the last one and remove the others.
 
 ## Rules
 

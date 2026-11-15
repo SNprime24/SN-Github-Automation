@@ -41,6 +41,7 @@ Write the title, body and labels as [issue-format.md](../../references/issue-for
 
 - Keep it short. A small request needs a short issue.
 - Do not add the original request to the body. In a public repo it can contain private details.
+- End the body with the marker from [issue-format.md](../../references/issue-format.md#marker). Use the current UTC time. Then `refine-issue` can find the comments that you write later.
 - If the request is larger than 2–3 days of work, write one parent issue. Recommend sub-issues in *Notes*. Do not make the sub-issues without the answer of the owner.
 
 ## 6. Create it
