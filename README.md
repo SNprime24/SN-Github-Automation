@@ -10,7 +10,7 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
 | [`actions/board-sweep`](actions/board-sweep) | Composite action, scheduled | Safety net: adds open issues that aren't on the board yet, fills empty fields, warns when sprints run out, and reopens closed issues whose card was moved out of Done. |
 | [`actions/sprint-rollover`](actions/sprint-rollover) | Composite action, scheduled | At the start of a sprint, moves unfinished Todo and Backlog cards to Backlog in the next sprint. Has a dry run. |
 | [`add-to-board.yml`](.github/workflows/add-to-board.yml) | Workflow (old copy) | The same logic as a standalone workflow, from before the action existed. Repos that still have a copy keep working, and they move to the action one at a time. It still lists the `transferred` trigger, so transferring an issue **out** of one of those repos shows a failed run there ([#8](https://github.com/SNprime24/SN-Github-Automation/issues/8)). The issue itself still reaches the board from its new repo. |
-| [`plugins/issue-workflow`](plugins/issue-workflow) | Claude Code plugin | Skills that take Claude through an issue: `start-work` (branch + In Progress on the board), `finish-work` (pull request + Review on the board) and `refine-issue` (turns a rough issue into a clear task). See [Using the Claude Code plugin](#using-the-claude-code-plugin). |
+| [`plugins/issue-workflow`](plugins/issue-workflow) | Claude Code plugin | Skills that take Claude through an issue: `start-work` (branch + In Progress on the board), `finish-work` (pull request + Review on the board), `create-issue` (makes a clear issue from a short request) and `refine-issue` (turns a rough issue into a clear task). See [Using the Claude Code plugin](#using-the-claude-code-plugin). |
 | [`lint.yml`](.github/workflows/lint.yml) | This repo's CI | Lints the workflows and shell scripts here and tests the actions, on every pull request and push to `main`. |
 
 ## Using the add-to-board action
@@ -64,6 +64,7 @@ This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin 
 |---|---|---|
 | `start-work` | Before any code is written for an issue | Reads the issue, creates a branch named `<type>/<repo-initials>-<issue-number>-<short-slug>` (e.g. `feat/sga-24-claude-plugin`), and moves the issue's card to **In Progress** on its board. |
 | `finish-work` | Automatically, as soon as the work is done (you can also ask for it) | Commits and pushes, opens a pull request that closes the issue, then moves the card to **Review** on the board. It never merges. |
+| `create-issue` | When you need a new issue | Makes a clear issue from a short request, in the same format as `refine-issue`. It looks for a duplicate first and uses the labels of the repo. It sets Priority and Size only when it is sure. Otherwise the board workflow sets the defaults. |
 | `refine-issue` | Any time | Rewrites a rough issue into a summary, to-do list and definition of done, or ticks off its checkboxes as work lands. Updates the issue directly and reports what it changed, so you can check it on the issue and the board. |
 
 **Install** (in Claude Code):
@@ -82,7 +83,7 @@ This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin 
 **Which board?** The skills don't name one. They use the board your own setup names. For example, add a line like this to your `~/.claude/CLAUDE.md`, which stays on your machine:
 
 ```markdown
-My project board: user <login>, project <number>. Use the issue-workflow skills when starting and finishing work on an issue.
+My project board: user <login>, project <number>. Use the issue-workflow skills when you create, start and finish work on an issue.
 ```
 
 Without that line, they use the board the issue's card is already on, and ask if there's more than one or none. Columns are matched by name: **In Progress**, and any column containing "Review" (such as `In Review / Testing`).

@@ -10,7 +10,7 @@
     {
       "name": "issue-workflow",
       "source": "./plugins/issue-workflow",
-      "description": "Start work on an issue (branch + In Progress on the board), finish it (PR + Review on the board), and refine rough issues into clear tasks."
+      "description": "Create clear issues, start work on them (branch + In Progress on the board), finish them (PR + Review on the board), and refine rough issues into clear tasks."
     }
   ]
 }
