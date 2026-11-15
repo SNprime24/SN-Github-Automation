@@ -14,7 +14,7 @@ STE100 is a controlled language from the aerospace industry (ASD). Full STE also
 
 ## Rules
 
-The README has the same rules as a `CLAUDE.md` snippet. If you change a rule here, change it there too.
+To use these rules for all text, copy them into your `~/.claude/CLAUDE.md`. If you change a rule here, change it there too.
 
 - Use a maximum of 20 words in an instruction sentence.
 - Use a maximum of 25 words in a description sentence.

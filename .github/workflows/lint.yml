@@ -28,12 +28,6 @@ jobs:
         run: shellcheck -x lib/*.sh actions/*/*.sh tests/*/*.sh
       - name: Plugin manifests are valid JSON
         run: jq empty .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
-      # The README snippet must have the same rules as writing-style.md.
-      - name: Writing rules in the README and writing-style.md are the same
-        run: |
-          diff \
-            <(sed -n '/^## Rules/,/^## /p' plugins/issue-workflow/references/writing-style.md | grep '^- ') \
-            <(sed -n '/^## Writing style (ASD-STE100)/,/^```$/p' README.md | grep '^- ')
 
   test-set-fields:
     runs-on: ubuntu-latest
