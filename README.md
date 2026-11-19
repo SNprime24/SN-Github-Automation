@@ -74,11 +74,14 @@ This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin 
 /plugin install issue-workflow@sn-github-automation
 ```
 
-**Update** after a new version is pushed here:
+**Update** after a new version is released here:
 
 ```text
 /plugin marketplace update sn-github-automation
+/plugin update issue-workflow@sn-github-automation
 ```
+
+The first command gets the new catalog. The second command installs the new plugin version. Then start a new session, or run `/reload-plugins`.
 
 **Which board?** The skills don't name one. They use the board your own setup names. For example, add a line like this to your `~/.claude/CLAUDE.md`, which stays on your machine:
 
@@ -101,7 +104,7 @@ Callers pin to a major version, such as `@v1`, rather than `@main`.
 
 Pinning to `@main` isn't recommended, because a broken commit there would break every caller at once.
 
-The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Bump it with every change to the plugin, or `/plugin marketplace update` won't pick the change up.
+The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Bump it with every change to the plugin. Claude Code keeps users on the cached copy until this version changes. Each plugin release has a tag `issue-workflow-v<version>` and a GitHub release with its notes.
 
 ## Layout
 
