@@ -22,6 +22,8 @@ jobs:
           ./actionlint -color -ignore 'SC2016:'
       - name: shellcheck
         run: shellcheck -x lib/*.sh actions/*/*.sh tests/*/*.sh
+      - name: Plugin manifests are valid JSON
+        run: jq empty .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
 
   test-scripts:
     runs-on: ubuntu-latest
