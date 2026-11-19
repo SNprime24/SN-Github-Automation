@@ -1,6 +1,6 @@
 ---
 name: create-issue
-description: Create a clear GitHub issue from a short request. Writes the title, summary, to-do list, definition of done and notes in the shared issue format, adds labels from the repo, and sets Priority and Size on the board only when sure. Creates the issue without waiting for approval and gives the link. Use when asked to create, open, make, file, log or write an issue or task (e.g. "create an issue for the login bug", "open an issue to add dark mode", "/create-issue add a README").
+description: Create a clear GitHub issue from a short request. Writes the title, summary, to-do list, definition of done and notes in the shared issue format, always sets an issue type, adds labels from the repo, and sets Priority and Size on the board only when sure. Creates the issue without waiting for approval and gives the link. Use when asked to create, open, make, file, log or write an issue or task (e.g. "create an issue for the login bug", "open an issue to add dark mode", "/create-issue add a README").
 argument-hint: "[repo] <short request>"
 ---
 
@@ -28,6 +28,7 @@ Search the open issues of the repo for the same task (GitHub MCP `search_issues`
 ## 3. Read the context
 
 - Read the files, workflows, docs, issues and PRs that the request names.
+- Read the issue types of the repo (GitHub MCP `list_issue_types`).
 - Read the labels of the repo and its label rules.
 - If the request names a parent issue, read it. Its scope controls the scope of the new issue.
 
@@ -39,7 +40,7 @@ Do not ask about the wording. Do not ask about Priority or Size.
 
 ## 5. Write the issue
 
-Write the title, body and labels as [issue-format.md](../../references/issue-format.md) tells you.
+Write the title, body, issue type and labels as [issue-format.md](../../references/issue-format.md) tells you. The issue type is mandatory.
 
 - Keep it short. A small request needs a short issue.
 - Do not add the original request to the body. In a public repo it can contain private details.
@@ -48,7 +49,9 @@ Write the title, body and labels as [issue-format.md](../../references/issue-for
 
 ## 6. Create it
 
-Create the issue (GitHub MCP `issue_write` with method `create`; fallback `gh issue create`). Do not wait for approval. If a parent issue was named, attach the new issue to it as a sub-issue.
+Create the issue with its issue type (GitHub MCP `issue_write` with method `create` and the `type` field; fallback `gh issue create`, then set the type as [issue-format.md](../../references/issue-format.md#issue-type) tells you). Do not wait for approval.
+
+Then read the issue back. If it has no type, set the type again. If a parent issue was named, attach the new issue to it as a sub-issue.
 
 ## 7. Set Priority and Size only if you are sure
 
@@ -71,6 +74,7 @@ To set a field, find the card as [board-moves.md](../../references/board-moves.m
 Give, in a few lines:
 
 - The issue link and title
+- The issue type
 - The labels
 - The board fields that you set, or "Priority and Size empty: the workflow sets the defaults"
 - A related issue, if you found one in step 2

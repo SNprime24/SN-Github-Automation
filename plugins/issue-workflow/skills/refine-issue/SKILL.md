@@ -1,6 +1,6 @@
 ---
 name: refine-issue
-description: Turn a GitHub issue that was written quickly (a rough title, an empty or half-filled body) into a clear task with a clean title, a summary, a to-do checklist, a definition of done, notes, and the right labels. On an issue that's already refined, it applies the changes the owner asked for in new comments, and ticks off its To-do and Done when checkboxes as work gets done. Asks the owner questions when something can't be inferred, then updates the issue and reports what changed. Use when asked to refine, clean up, polish, rewrite, expand or "fix up" an issue (e.g. "refine issue 14", "clean up my rough issues"), or to update its progress, tick or check off its boxes, or mark steps done (e.g. "update issue 15", "tick off what's done on 17").
+description: Turn a GitHub issue that was written quickly (a rough title, an empty or half-filled body) into a clear task with a clean title, a summary, a to-do checklist, a definition of done, notes, a mandatory issue type, and the right labels. On an issue that's already refined, it applies the changes the owner asked for in new comments, and ticks off its To-do and Done when checkboxes as work gets done. Asks the owner questions when something can't be inferred, then updates the issue and reports what changed. Use when asked to refine, clean up, polish, rewrite, expand or "fix up" an issue (e.g. "refine issue 14", "clean up my rough issues"), or to update its progress, tick or check off its boxes, or mark steps done (e.g. "update issue 15", "tick off what's done on 17").
 argument-hint: "[update] [repo] [issue-no]"
 ---
 
@@ -49,6 +49,7 @@ Read before you write:
 - The issue itself: title, body, labels, state, comments (GitHub MCP `issue_read`; fallback `gh issue view <n> --repo <owner/name> --comments`).
 - Its family: parent issue and sub-issues. A sub-issue's scope comes from its parent, and a parent's to-do list should mention its sub-issues.
 - Anything the issue names: a file, workflow or doc in the repo (read it), or a linked issue or PR.
+- The repo's **issue types** (GitHub MCP `list_issue_types`) and the type that the issue has now.
 - The repo's **label conventions**: its labels (GitHub MCP label tools; fallback `gh label list`), plus any rules in its README or `CONTRIBUTING.md`.
 - Its **board card**, if it has one: find the board as in [board-moves.md](../../references/board-moves.md), and read the card's fields (for example Priority, Size, Sprint, Due date) so the values you set build on what's already there.
 
@@ -66,7 +67,7 @@ Don't ask about things the issue, its parent, the repo or its docs already answe
 
 ## 4. Draft the refined issue
 
-Write the title, body, labels and board fields as [issue-format.md](../../references/issue-format.md) tells you. Then apply these extra rules for a refine:
+Write the title, body, issue type, labels and board fields as [issue-format.md](../../references/issue-format.md) tells you. The issue type is mandatory. Then apply these extra rules for a refine:
 
 - **Keep the original text.** Add this block at the end of the body, before the marker, every time. Do not change the original text in it.
 
@@ -87,13 +88,14 @@ Write the title, body, labels and board fields as [issue-format.md](../../refere
 
 Don't wait for approval. The owner checks the result on the issue and the board, and asks for changes or runs this skill again if something is off.
 
-- Update title, body and labels (GitHub MCP `issue_write` with method `update`; fallback `gh issue edit`). Don't change state, assignees, milestone or issue type.
+- Update title, body, issue type and labels (GitHub MCP `issue_write` with method `update` and the `type` field; fallback `gh issue edit`, then set the type as [issue-format.md](../../references/issue-format.md#issue-type) tells you). Don't change state, assignees or milestone.
+- Read the issue back. If it has no type, set the type again.
 - Set the board fields on the card.
 - If the owner agreed to a split in step 3, create each sub-issue with the same structure and link it to the parent. Don't split without that answer.
 
 ## 6. Report
 
-In a few lines: the issue link, old title → new title, labels added or removed, and board fields set (old → new for any value you changed). Then go on to the next issue if there is one.
+In a few lines: the issue link, old title → new title, issue type (old → new), labels added or removed, and board fields set (old → new for any value you changed). Then go on to the next issue if there is one.
 
 ## 7. Update mode: tick off checkboxes
 
@@ -103,14 +105,15 @@ For an issue that's already refined. The job is to bring its checkboxes up to da
 2. **Work out each box.** Mark a box done only when there is evidence or the owner says so. When evidence is missing or only partial, ask: one `AskUserQuestion` with `multiSelect` per section (To-do, Done when), listing the unchecked items, with your evidence in each description. At most 4 items per question, so split long lists. Also ask whether any ticked box should be unticked if the evidence says the work was undone.
 3. **Apply** by updating the `body` only, without waiting for approval. Start from the body you just read and change only the checkbox characters, plus any new steps or facts the owner mentioned (as To-do items or *Notes* lines). Every other character stays the same, including the original text in `<details>`. Set the marker time to the time when you read the comments in step 1, or add the marker if there is none. Re-read the issue just before writing; if it changed since step 1, start again from the new body.
 4. **Report** each box that changed (`[ ]` → `[x]` or back) with its reason, and how many boxes are done out of how many in each section.
-5. **Don't** change the title, labels, state or the board card. If every Done when box is now ticked, say so: the issue closes when its PR merges, or the owner can close it.
+5. **Issue type:** if the issue has no type, set one as [issue-format.md](../../references/issue-format.md#issue-type) tells you, and report it. Keep a type that is set already.
+6. **Don't** change the title, labels, state or the board card. If every Done when box is now ticked, say so: the issue closes when its PR merges, or the owner can close it.
 
 ## 8. Comment mode: apply new comments from the owner
 
 For a refined issue with new comments from the owner. The owner writes a comment to ask for a change, then runs this skill again.
 
 1. **Read the comments.** Write down the current UTC time first. This time goes into the marker later. Then get all comments of the issue (GitHub MCP `issue_read` with `get_comments`). Keep the comments from the owner with a time after the marker time. These are the **new comments**. Sort them from old to new.
-2. **Find the request in each new comment.** A comment can ask to change the title, a section of the body, the To-do or Done when items, the labels or the board fields.
+2. **Find the request in each new comment.** A comment can ask to change the title, a section of the body, the To-do or Done when items, the issue type, the labels or the board fields.
    - A comment with facts but no request: add the facts to *Notes* if they change the task. Otherwise, do nothing with it.
    - A comment that is not clear: ask the owner one question with `AskUserQuestion`. Then continue.
    - If two comments ask for different things, the newer comment has priority.
@@ -119,7 +122,7 @@ For a refined issue with new comments from the owner. The owner writes a comment
    - Keep ticked boxes ticked, unless a comment asks to remove that item.
    - Set the marker time to the time from item 1.
    - Re-read the issue just before writing. If the body changed since item 1, start again from the new body.
-4. **Do update mode.** Do steps 7.1 to 7.4 in the same run, so the checkboxes are also correct. Write the issue only one time if you can.
+4. **Do update mode.** Do steps 7.1 to 7.5 in the same run, so the checkboxes are also correct. Write the issue only one time if you can.
 5. **Report** each change with a link to the comment that caused it. Example: "Removed To-do 'Add tests' (comment of 2026-11-15 09:10)". Then give the checkbox changes from update mode.
 
 The marker makes sure that a comment is applied only one time: on the next run, the comment is older than the marker time.
