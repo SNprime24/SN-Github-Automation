@@ -48,14 +48,16 @@ none_upcoming='[ { "id": "I_PAST", "title": "Sprint 1", "startDate": "2000-01-01
 fill_env=(DEFAULTS="Priority=Normal Size=M Status=Backlog" SPRINT_TZ=UTC SPRINT_FILL_DAYS=3 SPRINT_LENGTH_DAYS=14)
 
 # Cards for the fill step. A card added in 2999 counts as recent, one added in 2000 doesn't.
-empty_recent='{ "id": "A", "isArchived": false, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [ {} ] } }'
-empty_old='{ "id": "B", "isArchived": false, "createdAt": "2000-01-01T00:00:00Z", "fieldValues": { "nodes": [] } }'
-done_recent='{ "id": "C", "isArchived": false, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [
+empty_recent='{ "id": "A", "isArchived": false, "type": "ISSUE", "content": { "__typename": "Issue" }, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [ {} ] } }'
+empty_old='{ "id": "B", "isArchived": false, "type": "ISSUE", "content": { "__typename": "Issue" }, "createdAt": "2000-01-01T00:00:00Z", "fieldValues": { "nodes": [] } }'
+done_recent='{ "id": "C", "isArchived": false, "type": "ISSUE", "content": { "__typename": "Issue" }, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [
   { "name": "Done", "field": { "name": "Status" } } ] } }'
-archived='{ "id": "D", "isArchived": true, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [] } }'
-all_set='{ "id": "E", "isArchived": false, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [
+archived='{ "id": "D", "isArchived": true, "type": "ISSUE", "content": { "__typename": "Issue" }, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [] } }'
+all_set='{ "id": "E", "isArchived": false, "type": "ISSUE", "content": { "__typename": "Issue" }, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [
   { "name": "High", "field": { "name": "Priority" } }, { "name": "S", "field": { "name": "Size" } },
   { "name": "Todo", "field": { "name": "Status" } }, { "field": { "name": "Sprint" } } ] } }'
+# The card of a deleted issue: the API still lists it, with no content and no readable fields
+deleted='{ "id": "F", "isArchived": false, "type": "REDACTED", "content": null, "createdAt": "2999-01-01T00:00:00Z", "fieldValues": { "nodes": [] } }'
 
 ### add-missing.sh
 
@@ -85,8 +87,8 @@ Checked 1 open issues assigned to someone in repos owned by others" \
 
 reset_data
 board "$two_upcoming" >"$data/project.json"
-items_page "$empty_recent, $empty_old, $done_recent, $archived, $all_set" >"$data/items.json"
-run_case "fills empty fields everywhere and Sprint only on recent cards that aren't Done" \
+items_page "$empty_recent, $empty_old, $done_recent, $archived, $all_set, $deleted" >"$data/items.json"
+run_case "fills empty fields everywhere and Sprint only on recent cards that aren't Done, and skips deleted issues" \
   "$action/fill-defaults.sh" 0 \
   "set project=PROJ item=A field=F_PRIO option=O_NORMAL
 set project=PROJ item=A field=F_SIZE option=O_M

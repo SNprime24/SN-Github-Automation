@@ -7,7 +7,7 @@ A safety net for a GitHub Projects board, meant to run on a schedule (for exampl
    - Leaves out forks, archived repos, repos with issues turned off, and the repos in `skip-repos`.
    - Adding an issue that's already on the board does nothing, so reruns are safe.
 2. **Fill empty fields** ([`fill-defaults.sh`](fill-defaults.sh)):
-   - Fills each **empty** single-select field named in `defaults`, on every card that isn't archived.
+   - Fills each **empty** single-select field named in `defaults`, on every card that isn't archived. It skips the card of a deleted issue, because nobody can update it.
    - Gives an **empty** Sprint the next sprint, but only on cards added in the last `sprint-fill-days` days that aren't Done.
    - Warns about upcoming sprints that aren't `sprint-length-days` long and when only one is left. **Fails** when none is left, so GitHub emails the owner.
 3. **Reopen issues moved out of Done** ([`reopen-moved.sh`](reopen-moved.sh)):

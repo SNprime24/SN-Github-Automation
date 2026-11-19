@@ -19,7 +19,7 @@ cards_query='
     user(login: $login) { projectV2(number: $number) {
       items(first: 100, after: $endCursor) {
         pageInfo { hasNextPage endCursor }
-        nodes { id isArchived createdAt fieldValues(first: 30) { nodes {
+        nodes { id isArchived createdAt type content { __typename } fieldValues(first: 30) { nodes {
           ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name } } }
           ... on ProjectV2ItemFieldIterationValue { field { ... on ProjectV2IterationField { name } } }
         } } }
@@ -27,10 +27,10 @@ cards_query='
     } }
   }'
 
-# One line per card: item ID, whether it needs the next sprint, the names of its set fields
+# One line per card: item ID, whether it needs the next sprint, the names of its set fields. A deleted issue leaves a card nobody can update, so skip it.
 cards_filter='
   .data.user.projectV2.items.nodes[]
-  | select(.isArchived | not)
+  | select((.isArchived | not) and .type != "REDACTED" and .content != null)
   | [.fieldValues.nodes[] | select(.field.name)] as $values
   | ($values | map(.field.name)) as $filled
   | ($values | any(.field.name == "Status" and .name == "Done")) as $done
