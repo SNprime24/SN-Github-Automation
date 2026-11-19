@@ -15,11 +15,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      # SC2016 is ignored because the old add-to-board.yml copy can't carry a shellcheck directive.
       - name: actionlint (also runs shellcheck on run blocks)
         run: |
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
-          ./actionlint -color -ignore 'SC2016:'
+          ./actionlint -color
       - name: shellcheck
         run: shellcheck -x lib/*.sh actions/*/*.sh tests/*/*.sh
       - name: Plugin manifests are valid JSON
