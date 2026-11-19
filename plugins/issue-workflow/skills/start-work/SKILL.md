@@ -36,7 +36,7 @@ Format: **`<type>/<repo-initials>-<issue-number>-<short-slug>`**, all lowercase.
 
 | Part | Rule |
 |---|---|
-| `type` | From the labels first, then the issue text: bug → `fix`; feature or enhancement → `feat`; documentation → `docs`; refactor → `refactor`; tests → `test`; anything else → `chore`. |
+| `type` | From the issue type first, then the labels, then the issue text: Bug or bug → `fix`; Feature, feature or enhancement → `feat`; Docs or documentation → `docs`; refactor → `refactor`; tests → `test`; anything else → `chore`. |
 | `repo-initials` | The first letter of each word in the repo name, splitting on `-`, `_`, `.` and camelCase: `my-sample-repo` → `msr`, `SN-Github-Automation` → `sga`. A one-word name uses its first three letters: `website` → `web`. |
 | `issue-number` | The issue's number, no `#`. |
 | `short-slug` | 2–5 words from the title, lowercase and joined by hyphens, with filler words (a, the, for, to) dropped. ASCII letters, digits and hyphens only. |
