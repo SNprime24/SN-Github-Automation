@@ -8,7 +8,34 @@ Adds the issue that triggered the workflow to a GitHub Projects board, then fill
 
 Fields that already have a value are never changed. If a field or option isn't on the board, or no sprint starts after today, the run logs a warning and carries on.
 
-See the [main README](../../README.md#using-the-add-to-board-action) for the caller workflow and the `BOARD_TOKEN` secret.
+## Usage
+
+Put this caller in each repo that sends issues to the board, for example as `.github/workflows/add-to-board.yml`:
+
+```yaml
+name: Add to board
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions: {}
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: SNprime24/SN-Github-Automation/actions/add-to-board@v2
+        with:
+          board-token: ${{ secrets.BOARD_TOKEN }}
+          owner: your-login
+          project-number: 1
+          defaults: Priority=Normal Size=M Status=Backlog
+          sprint-tz: UTC
+```
+
+Each repo needs its own `BOARD_TOKEN` secret. If the secret isn't set, the run ends with a notice instead of failing. The [main README](../../README.md#using-the-add-to-board-action) tells how to add the secret and test the caller.
 
 ## Inputs
 
