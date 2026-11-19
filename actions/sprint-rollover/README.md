@@ -1,6 +1,6 @@
 # sprint-rollover
 
-Run at the start of each sprint. It moves unfinished cards to **Backlog** in the **next sprint**, which is the first iteration that starts after today (the same rule new cards follow):
+Run at the start of each sprint. It moves unfinished cards to **Backlog** in the **next sprint**, which is the first iteration that starts after today:
 
 - cards in **Todo** from the current sprint or an earlier one;
 - cards in **Backlog** from the current sprint.
@@ -22,7 +22,7 @@ name: Sprint rollover
 
 on:
   schedule:
-    - cron: "47 18 * * 4" # pick a time just after midnight on sprint-start day, in sprint-tz
+    - cron: "47 18 * * 4" # just after midnight on sprint-start day, in sprint-tz
   workflow_dispatch:
     inputs:
       as_of:
@@ -41,9 +41,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: SNprime24/SN-Github-Automation/actions/sprint-rollover@v1
+      - uses: SNprime24/SN-Github-Automation/actions/sprint-rollover@v2
         with:
           board-token: ${{ secrets.BOARD_TOKEN }}
+          owner: your-login
+          project-number: 1
+          sprint-tz: UTC
           as-of: ${{ inputs.as_of }}
           dry-run: ${{ inputs.dry_run }}
 ```
@@ -52,14 +55,16 @@ The log lists the URLs of the moved cards. Put the caller in a **private** repo 
 
 ## Inputs
 
-| Input | Default | What it is |
+None have defaults. A missing required input fails the run with an error naming it.
+
+| Input | Required | What it is |
 |---|---|---|
-| `board-token` | none (required) | Classic personal access token with the `repo` and `project` scopes, usually `${{ secrets.BOARD_TOKEN }}`. Without it, the run fails. |
-| `owner` | `SNprime24` | Login of the **user** that owns the board. |
-| `project-number` | `13` | The board's number, from its URL: `https://github.com/users/<owner>/projects/<number>`. |
-| `sprint-tz` | The board owner's timezone (see [`action.yml`](action.yml)) | Timezone used to decide what "today" is. |
-| `as-of` | empty (today) | Act as if today is this date, `YYYY-MM-DD`. Useful with `dry-run` to see what a past or future rollover would do. |
-| `dry-run` | `false` | `true` to only list the cards that would move, without changing anything. |
+| `board-token` | yes | Classic personal access token with the `repo` and `project` scopes, usually `${{ secrets.BOARD_TOKEN }}`. |
+| `owner` | yes | Login of the **user** that owns the board. |
+| `project-number` | yes | The board's number, from its URL: `https://github.com/users/<owner>/projects/<number>`. |
+| `sprint-tz` | yes | Timezone used to decide what "today" is. |
+| `as-of` | no | Act as if today is this date, `YYYY-MM-DD`. Empty for today. |
+| `dry-run` | no | `true` to only list the cards that would move. Anything else, including empty, moves them. |
 
 ## Requirements
 
@@ -70,7 +75,7 @@ The log lists the URLs of the moved cards. Put the caller in a **private** repo 
 
 | File | What it is |
 |---|---|
-| [`action.yml`](action.yml) | Inputs and the step |
+| [`action.yml`](action.yml) | Inputs and the steps |
 | [`rollover.sh`](rollover.sh) | Finds the cards and moves them |
-| [`../../lib/board.sh`](../../lib/board.sh) | Helpers shared with board-sweep: the project lookup and setting a field |
+| [`../../lib/board.sh`](../../lib/board.sh) | Board queries and updates shared with the other actions |
 | [`../../tests/sprint-rollover/`](../../tests/sprint-rollover) | Tests for `rollover.sh` with a fake `gh` |

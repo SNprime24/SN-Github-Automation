@@ -1,5 +1,4 @@
-# Lints the workflows and shell scripts in this repo and tests the actions.
-# Runs on every pull request and on pushes to main.
+# Lints the workflows and shell scripts and tests the actions, on every pull request and push to main.
 name: Lint and test
 
 on:
@@ -16,89 +15,75 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
+      # SC2016 is ignored because the old add-to-board.yml copy can't carry a shellcheck directive.
       - name: actionlint (also runs shellcheck on run blocks)
-        # SC2016 is ignored because the $names inside single-quoted GraphQL queries
-        # are GraphQL variables. add-to-board.yml has to stay an unchanged copy, so
-        # it can't carry a shellcheck directive.
         run: |
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
           ./actionlint -color -ignore 'SC2016:'
       - name: shellcheck
-        # -x follows the `source` lines into lib/ and tests/lib/.
         run: shellcheck -x lib/*.sh actions/*/*.sh tests/*/*.sh
       - name: Plugin manifests are valid JSON
         run: jq empty .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
 
-  test-set-fields:
+  test-scripts:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - name: Run set-fields.sh against a fake gh
-        run: bash tests/add-to-board/test-set-fields.sh
+      - name: Run every tests/*/test-*.sh
+        run: |
+          status=0
+          for test in tests/*/test-*.sh; do
+            echo "::group::$test"
+            bash "$test" || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"
 
-  test-skip-without-token:
+  # The error annotations this job shows are expected.
+  test-without-token:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - name: Run the action with no token
+      - name: add-to-board with no token
         id: board
         uses: ./actions/add-to-board
         with:
           board-token: ''
-      - name: Check that it skipped
-        env:
-          ITEM_ID: ${{ steps.board.outputs.item-id }}
-        run: |
-          if [[ -n "$ITEM_ID" ]]; then
-            echo "::error::Expected no item ID without a token, got '$ITEM_ID'"
-            exit 1
-          fi
-          echo "Skipped as expected"
-
-  test-board-sweep:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v5
-      - name: Run the board-sweep scripts against a fake gh
-        run: bash tests/board-sweep/test-board-sweep.sh
-
-  test-sprint-rollover:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v5
-      - name: Run rollover.sh against a fake gh
-        run: bash tests/sprint-rollover/test-sprint-rollover.sh
-
-  # Unlike add-to-board, the scheduled actions fail without a token, so a
-  # missing secret gets noticed. The error annotations this job shows are expected.
-  test-scheduled-need-token:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v5
-      - name: Run board-sweep with no token
+          owner: someone
+          project-number: 1
+          defaults: Status=Backlog
+          sprint-tz: UTC
+      - name: board-sweep with no token
         id: sweep
         continue-on-error: true
         uses: ./actions/board-sweep
         with:
           board-token: ''
-      - name: Run sprint-rollover with no token
+          owner: someone
+          project-number: 1
+          defaults: Status=Backlog
+          sprint-tz: UTC
+          sprint-fill-days: 3
+          sprint-length-days: 14
+      - name: sprint-rollover with no token
         id: rollover
         continue-on-error: true
         uses: ./actions/sprint-rollover
         with:
           board-token: ''
-      - name: Check that both failed
+          owner: someone
+          project-number: 1
+          sprint-tz: UTC
+      - name: Check that add-to-board skipped and the others failed
         env:
+          ITEM_ID: ${{ steps.board.outputs.item-id }}
           SWEEP: ${{ steps.sweep.outcome }}
           ROLLOVER: ${{ steps.rollover.outcome }}
         run: |
-          if [[ "$SWEEP" != failure || "$ROLLOVER" != failure ]]; then
-            echo "::error::Expected both to fail without a token, got board-sweep: $SWEEP, sprint-rollover: $ROLLOVER"
+          if [[ -n "$ITEM_ID" || "$SWEEP" != failure || "$ROLLOVER" != failure ]]; then
+            echo "::error::Expected a skip and two failures, got item '$ITEM_ID', board-sweep $SWEEP, sprint-rollover $ROLLOVER"
             exit 1
           fi
-          echo "Both failed as expected"
+          echo "add-to-board skipped; board-sweep and sprint-rollover failed as expected"

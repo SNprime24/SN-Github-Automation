@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Runs the board-sweep scripts against a fake `gh` and checks which changes they
-# make. Needs bash and jq.
-#
-#   bash tests/board-sweep/test-board-sweep.sh
+# Runs the board-sweep scripts against the fake gh.
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -10,9 +7,7 @@ action="$here/../../actions/board-sweep"
 # shellcheck source=tests/lib/harness.sh
 source "$here/../lib/harness.sh"
 
-# Board with Priority, Size and Status single-select fields, a Sprint iteration
-# field with the given iterations, and a text field, which the real API returns
-# as {} because the query has no fragment for it.
+# A board with the given Sprint iterations; {} stands for a text field, as the API returns it
 board() {
   cat <<EOF
 { "data": { "user": { "projectV2": {
@@ -136,8 +131,7 @@ set project=PROJ item=A field=F_STATUS option=O_BACKLOG" \
 
 ### reopen-moved.sh
 
-# closed_card ITEM ISSUE STATE CAN_REOPEN STATUS OPTION [ARCHIVED]
-# The issue closed on 2026-01-01.
+# ITEM ISSUE STATE CAN_REOPEN STATUS OPTION [ARCHIVED]: a card whose issue closed on 2026-01-01
 closed_card() {
   echo "{ \"id\": \"$1\", \"isArchived\": ${7:-false},
     \"content\": { \"id\": \"$2\", \"url\": \"https://github.com/someone/app/issues/${2#ISSUE_}\",
@@ -160,21 +154,27 @@ items_page "$(closed_card ITEM_1 ISSUE_1 CLOSED true 'In progress' O_PROG),
   $(closed_card ITEM_4 ISSUE_4 CLOSED true Done O_DONE),
   $(closed_card ITEM_5 ISSUE_5 OPEN true Todo O_TODO),
   $(closed_card ITEM_6 ISSUE_6 CLOSED true Todo O_TODO),
-  $(closed_card ITEM_7 ISSUE_7 CLOSED true Todo O_TODO true)" >"$data/closed.json"
+  $(closed_card ITEM_7 ISSUE_7 CLOSED true Todo O_TODO true),
+  { \"id\": \"ITEM_8\", \"isArchived\": false, \"fieldValueByName\": null,
+    \"content\": { \"id\": \"ISSUE_8\", \"url\": \"https://github.com/someone/app/issues/8\",
+      \"state\": \"CLOSED\", \"closedAt\": \"2026-01-01T00:00:00Z\", \"viewerCanReopen\": true } }" >"$data/closed.json"
 status_changes PROJ 2026-01-02T00:00:00Z >"$data/timeline/ISSUE_1.json"
 status_changes PROJ 2025-12-31T00:00:00Z >"$data/timeline/ISSUE_2.json"
 status_changes PROJ 2026-01-02T00:00:00Z >"$data/timeline/ISSUE_3.json"
 status_changes OTHER 2026-01-02T00:00:00Z >"$data/timeline/ISSUE_6.json"
 status_changes PROJ 2026-01-02T00:00:00Z >"$data/timeline/ISSUE_7.json"
+status_changes PROJ 2026-01-02T00:00:00Z >"$data/timeline/ISSUE_8.json"
 run_case "reopens only issues moved out of Done after closing, and restores their column" \
   "$action/reopen-moved.sh" 0 \
   "reopen issue=ISSUE_1
+reopen issue=ISSUE_8
 set project=PROJ item=ITEM_1 field=F_STATUS option=O_PROG" \
   "Reopened https://github.com/someone/app/issues/1 (card is in 'In progress')
 Left closed: https://github.com/someone/app/issues/2 is in 'Todo'
 ::warning::Can't reopen https://github.com/someone/app/issues/3
 Left closed: https://github.com/someone/app/issues/6 is in 'Todo'
-Reopened 1 issues" \
+Reopened https://github.com/someone/app/issues/8 (card is in 'no status')
+Reopened 2 issues" \
   REOPEN_SETTLE_SECONDS=0
 
 finish

@@ -31,9 +31,13 @@ Shared GitHub Actions workflows and actions that other repositories import, so t
        runs-on: ubuntu-latest
        timeout-minutes: 2
        steps:
-         - uses: SNprime24/SN-Github-Automation/actions/add-to-board@v1
+         - uses: SNprime24/SN-Github-Automation/actions/add-to-board@v2
            with:
              board-token: ${{ secrets.BOARD_TOKEN }}
+             owner: your-login
+             project-number: 1
+             defaults: Priority=Normal Size=M Status=Backlog
+             sprint-tz: UTC
    ```
 
 2. Add a repository secret named `BOARD_TOKEN` (**Settings → Secrets and variables → Actions**). It must be a **classic** personal access token with the `repo` and `project` scopes.
@@ -43,7 +47,7 @@ If `BOARD_TOKEN` isn't set, each run ends with a notice instead of failing, so t
 
 **Transferred issues** need no trigger of their own. An issue moved into the repo arrives as `opened`, which adds it. Don't add `transferred` to the list. That event only reaches the repo the issue **left**, after the issue has gone, so nothing can be added from there. If a caller still lists it, the action skips it with a notice instead of failing.
 
-The other inputs (which board, which defaults, which timezone) all have defaults, so most callers pass only the token. They're listed in the [action's README](actions/add-to-board/README.md#inputs).
+The inputs have **no defaults**: each caller names its board, its default field values and its timezone, so every setting can be read and changed in the caller. They're described in the [action's README](actions/add-to-board/README.md#inputs). A run with a token but a missing input fails with an error naming it.
 
 ## Using the scheduled actions
 
@@ -52,7 +56,7 @@ The other inputs (which board, which defaults, which timezone) all have defaults
 - [board-sweep](actions/board-sweep/README.md#usage), for example twice a day
 - [sprint-rollover](actions/sprint-rollover/README.md#usage), weekly on the weekday sprints start
 
-They need the same `BOARD_TOKEN` secret as add-to-board, and unlike add-to-board they **fail** without it, so a missing secret gets noticed.
+They need the same `BOARD_TOKEN` secret as add-to-board, and unlike add-to-board they **fail** without it, so a missing secret gets noticed. Their other inputs have no defaults either.
 
 Their logs name repos and issue URLs, and run logs are kept in the repo that runs the workflow. To keep those private, put the callers in a **private** repo. The actions can still come from this public one.
 
@@ -97,10 +101,12 @@ The skills use the GitHub and GitHub Projects MCP servers, and fall back to the 
 
 ## Versioning
 
-Callers pin to a major version, such as `@v1`, rather than `@main`.
+Callers pin to a major version, such as `@v2`, rather than `@main`.
 
-- **Fixes and new options that don't change behaviour** go out as `v1.x.y`. The `v1` tag moves forward to the latest `v1.x.y`, so callers on `@v1` get them automatically.
-- **Breaking changes** (renamed or removed inputs, different defaults, different behaviour) go out as `v2`. Callers on `@v1` keep working until they choose to move.
+- **Fixes and new options that don't change behaviour** go out as `v2.x.y`. The `v2` tag moves forward to the latest `v2.x.y`, so callers on `@v2` get them automatically.
+- **Breaking changes** (renamed or removed inputs, different defaults, different behaviour) go out as the next major version. Callers keep working on the old one until they choose to move.
+
+`v2` removed every input default, so callers pass all their settings. `v1` still works as before, with the defaults, until its callers move to `v2`.
 
 Pinning to `@main` isn't recommended, because a broken commit there would break every caller at once.
 
@@ -113,9 +119,9 @@ The Claude Code plugin is versioned separately, by the `version` in [`plugin.jso
 .github/workflows/   Reusable workflows (on: workflow_call) and this repo's own workflows
 actions/<name>/      One composite action per folder: action.yml, its scripts and a short README
 plugins/<name>/      One Claude Code plugin per folder: .claude-plugin/plugin.json and its skills
-lib/                 Shell helpers shared by the actions' scripts
-tests/<name>/        Tests for the action of the same name
-tests/lib/           The fake gh and the test helpers the tests share
+lib/                 Shell helpers shared by the actions: board.sh (board queries and updates), require-inputs.sh
+tests/<name>/        Tests for the action of the same name, as test-*.sh
+tests/lib/           The fake gh, the shared test setup, and the tests for lib/
 ```
 
 New additions go where they fit:
@@ -123,7 +129,9 @@ New additions go where they fit:
 - **A step other workflows can use** → a new folder under `actions/`, named after what it does (for example `actions/add-to-board/`).
 - **A whole job other repos call** → a reusable workflow in `.github/workflows/`.
 
-Each new action or workflow also gets a row in [What's here](#whats-here), and its tests a job in `lint.yml`.
+Each new action or workflow also gets a row in [What's here](#whats-here). Its tests go in `tests/<name>/test-*.sh`, which `lint.yml` runs without being edited.
+
+Comments stay to one line. Names should say what the code does.
 
 ## Development
 
@@ -131,16 +139,14 @@ Every pull request runs [`lint.yml`](.github/workflows/lint.yml):
 
 - **actionlint** on the workflows, which also runs shellcheck on their `run:` blocks
 - **shellcheck** on the scripts in `lib/`, `actions/` and `tests/`
-- **The script tests**, which run each action's scripts against a fake `gh` and check exactly which changes they make
+- **Every `tests/*/test-*.sh`**, which run the scripts against a fake `gh` and check exactly which changes they make
 - **The no-token checks:** add-to-board must skip without a token, and board-sweep and sprint-rollover must fail
 - **The plugin manifests** must be valid JSON. For a fuller check, run `claude plugin validate .` and `claude plugin validate plugins/issue-workflow` locally
 
 The script tests can also be run locally with bash and jq:
 
 ```bash
-bash tests/add-to-board/test-set-fields.sh
-bash tests/board-sweep/test-board-sweep.sh
-bash tests/sprint-rollover/test-sprint-rollover.sh
+for test in tests/*/test-*.sh; do bash "$test"; done
 ```
 
 ## Requirements
