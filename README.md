@@ -110,7 +110,7 @@ Callers pin to a major version, such as `@v2`, rather than `@main`.
 
 Pinning to `@main` isn't recommended, because a broken commit there would break every caller at once.
 
-The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Bump it with every change to the plugin. Claude Code keeps users on the cached copy until this version changes. Each plugin release has a tag `issue-workflow-v<version>` and a GitHub release with its notes.
+The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Change it only in the release commit, not in each pull request that changes the plugin. Claude Code keeps users on the cached copy until this version changes. Each plugin release has a tag `issue-workflow-v<version>` and a GitHub release with its notes. The moving tag `issue-workflow-v1` points to the newest release, and it will become the source of the plugin for users (#47).
 
 To make a release of the Actions or the plugin, follow [`RELEASING.md`](RELEASING.md).
 
