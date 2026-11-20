@@ -87,6 +87,16 @@ This repo is also a Claude Code plugin marketplace. Its `issue-workflow` plugin 
 
 The first command gets the new catalog. The second command installs the new plugin version. Then start a new session, or run `/reload-plugins`.
 
+**Go back to an earlier version** if a release fails. Each release has a tag `issue-workflow-v<version>`. Install the release tag that worked, for example `issue-workflow-v1.1.0`:
+
+```text
+claude plugin marketplace remove sn-github-automation
+claude plugin marketplace add SNprime24/SN-Github-Automation#issue-workflow-v1.1.0
+claude plugin install issue-workflow@sn-github-automation
+```
+
+The marketplace then stays on that release. To get new releases again, remove it and add it again without `#<tag>`.
+
 **Which board?** The skills don't name one. They use the board your own setup names. For example, add a line like this to your `~/.claude/CLAUDE.md`, which stays on your machine:
 
 ```markdown
@@ -110,7 +120,8 @@ Callers pin to a major version, such as `@v2`, rather than `@main`.
 
 Pinning to `@main` isn't recommended, because a broken commit there would break every caller at once.
 
-The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Bump it with every change to the plugin. Claude Code keeps users on the cached copy until this version changes. Each plugin release has a tag `issue-workflow-v<version>` and a GitHub release with its notes.
+The Claude Code plugin is versioned separately, by the `version` in [`plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json). Change it only in the release commit, not in each pull request that changes the plugin. Claude Code keeps users on the cached copy until this version changes. Each plugin release has a tag `issue-workflow-v<version>` and a GitHub release with its notes.
+To make a release of the Actions or the plugin, follow [`RELEASING.md`](RELEASING.md).
 
 ## Layout
 
