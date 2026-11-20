@@ -97,7 +97,7 @@ Without that line, they use the board the issue's card is already on, and ask if
 
 The skills use the GitHub and GitHub Projects MCP servers, and fall back to the `gh` CLI only when those aren't available. Either way, the board moves need access with the `project` scope (for `gh`: `gh auth refresh -s project`).
 
-**Writing style.** The skills write in the style of ASD-STE100 Simplified Technical English. See [`writing-style.md`](plugins/issue-workflow/references/writing-style.md) for the rules and examples. Skills load only when a task matches them. To use the style for all text, copy the rules into your `~/.claude/CLAUDE.md`.
+**Writing style.** The skills write in the style of ASD-STE100 Simplified Technical English. See [`writing-style.md`](plugins/issue-workflow/references/writing-style.md) for the rules and examples. The plugin loads these rules at the start of each session and after a compaction, with a `SessionStart` hook. Thus the rules also apply to text outside the skills, for example code comments and chat replies. You do not have to copy them into your `~/.claude/CLAUDE.md`.
 
 ## Versioning
 
