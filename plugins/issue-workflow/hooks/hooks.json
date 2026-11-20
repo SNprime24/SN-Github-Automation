@@ -1,0 +1,15 @@
+{
+  "description": "Load the ASD-STE100 writing rules into each session.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/references/writing-style.md\""
+          }
+        ]
+      }
+    ]
+  }
+}
