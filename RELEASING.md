@@ -5,7 +5,7 @@ This repo has two kinds of release. Each kind has its own tags, its own steps an
 | Kind | Tag | Release title | Latest release |
 |---|---|---|---|
 | The GitHub Actions in `actions/` | `v<major>.<minor>.<patch>`, plus the major tag `v<major>` | `Actions v2.0.2` | Yes |
-| The `issue-workflow` Claude Code plugin | `issue-workflow-v<version>`, plus the major tag `issue-workflow-v<major>` | `issue-workflow plugin 1.2.0` | No |
+| The `issue-workflow` Claude Code plugin | `issue-workflow-v<version>` | `issue-workflow plugin 1.2.0` | No |
 
 The examples below use `v2.0.2` for the Actions and `1.2.0` for the plugin. Change them to the version that you release.
 
@@ -109,19 +109,16 @@ For a **major** release, also add these sections after the first line:
 
 ### How users get the plugin
 
-Users get the plugin from the moving major tag `issue-workflow-v1`, not from `main`. This is the gate:
-
-- You can merge plugin changes to `main` at any time. Users do not get them.
-- Users get a new release only when you move `issue-workflow-v1`.
-- If a release is bad, you can move `issue-workflow-v1` back to the last good release.
-
-> **The gate is not active yet.** At this time, `.claude-plugin/marketplace.json` uses the relative source `./plugins/issue-workflow`, so new installs get `main`. Issue #47 changes the source to the tag `issue-workflow-v1`. Until then, keep `main` in a state that works.
+- Claude Code reads the plugin from `main`. The source in `.claude-plugin/marketplace.json` is the relative path `./plugins/issue-workflow`.
+- Users who have the plugin get a new copy only when `version` in `plugin.json` changes.
+- A new install gets `main` as it is, so keep `main` in a state that works.
+- Each release tag `issue-workflow-v<version>` is a checkpoint. If a release fails, users can install an earlier release tag. See [Roll back a bad release](#roll-back-a-bad-release).
 
 ### When to change the version
 
 Change `version` in [`plugins/issue-workflow/.claude-plugin/plugin.json`](plugins/issue-workflow/.claude-plugin/plugin.json) **only in the release commit**. Do not change it in the pull requests that change the plugin.
 
-Claude Code compares this version with the version in its cache. If you move the tag but do not change the version, users keep their cached copy.
+Claude Code compares this version with the version in its cache. Users who have the plugin get the changes on `main` only when this version changes.
 
 - **Patch** (`1.1.0` → `1.1.1`): a fix.
 - **Minor** (`1.1.1` → `1.2.0`): a new skill, or a change that users see and that is compatible.
@@ -146,39 +143,39 @@ Claude Code compares this version with the version in its cache. If you move the
    gh release create issue-workflow-v1.2.0 --verify-tag --title "issue-workflow plugin 1.2.0" --notes-file notes.md --latest=false
    ```
 
-5. Move the major tag to the new release. Users get the release at this step:
-
-   ```bash
-   git tag -fa issue-workflow-v1 -m "Point issue-workflow-v1 to 1.2.0" issue-workflow-v1.2.0^{}
-   git push origin issue-workflow-v1 --force
-   ```
-
-   For a **major** release, make a new tag `issue-workflow-v2`, and change `ref` in `marketplace.json` to it. All users then move to the new major version.
-
-6. Update your own install:
+5. Update your own install:
 
    ```bash
    claude plugin marketplace update sn-github-automation
    claude plugin update issue-workflow@sn-github-automation
    ```
 
-7. Make sure that the update reports the new version. Then start a new session, or run `/reload-plugins`.
+6. Make sure that the update reports the new version. Then start a new session, or run `/reload-plugins`.
 
 ### Roll back a bad release
 
-Use one of these methods:
+1. Find the last good release tag, for example `issue-workflow-v1.1.0`.
+2. Tell users which release tag to install. Write it in two places:
+   - At the top of the notes of the bad release (`gh release edit issue-workflow-v1.2.0 --notes-file notes.md`).
+   - In the plugin section of `README.md`, as a short **Known problem** note.
+3. Users install that release tag with these commands:
 
-- **Fix forward (recommended):** revert the bad change on `main`, and release a new patch version, for example `1.2.1`.
-- **Move the tag back:** point `issue-workflow-v1` to the last good release:
+   ```bash
+   claude plugin marketplace remove sn-github-automation
+   claude plugin marketplace add SNprime24/SN-Github-Automation#issue-workflow-v1.1.0
+   claude plugin install issue-workflow@sn-github-automation
+   ```
 
-  ```bash
-  git tag -fa issue-workflow-v1 -m "Point issue-workflow-v1 back to 1.1.0" issue-workflow-v1.1.0^{}
-  git push origin issue-workflow-v1 --force
-  ```
+4. Revert the bad change on `main`, and release a new patch version, for example `1.2.1`.
+5. Remove the **Known problem** note from `README.md`. Tell users to go back to `main`:
 
-  Claude Code updates when the version is different. An update to a lower version is not tested yet. Issue #47 tests it.
+   ```bash
+   claude plugin marketplace remove sn-github-automation
+   claude plugin marketplace add SNprime24/SN-Github-Automation
+   claude plugin install issue-workflow@sn-github-automation
+   ```
 
-- **For one user only:** add the marketplace with an exact tag, for example `claude plugin marketplace add SNprime24/SN-Github-Automation#issue-workflow-v1.1.0`.
+A marketplace that is added with a release tag stays on that tag. It does not get new releases until the user adds it again without the tag.
 
 ### Notes template for the plugin
 
@@ -204,6 +201,16 @@ Use one of these methods:
 ```
 
 Then start a new session, or run `/reload-plugins`. The update must report version <new version>.
+
+## Go back to this version
+
+If a later release fails, install this release tag:
+
+```bash
+claude plugin marketplace remove sn-github-automation
+claude plugin marketplace add SNprime24/SN-Github-Automation#issue-workflow-v<new version>
+claude plugin install issue-workflow@sn-github-automation
+```
 
 ## Changes in this release
 
